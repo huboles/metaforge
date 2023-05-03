@@ -1,0 +1,11 @@
+[package]
+name = "metaforge"
+version = "0.1.1"
+edition = "2021"
+
+[dependencies]
+pandoc = "0.8"
+color-eyre =  { version = "0.5", default-features = false }
+walkdir = "2"
+pest = "2.0"
+pest_derive = "2.0"
