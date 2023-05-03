@@ -1,0 +1,30 @@
+${
+    var = "good"
+    blank = BLANK
+}
+
+@{
+    sub.array = ["sub","value"]
+    arr = ["split","up","values"]
+    blank = BLANK
+    -{ with_spaces = [ "stuff", "with" , "spaces" ] }
+}
+
+&{
+    pat = "pattern"
+    pat.sub_pat = DEFAULT
+    blank_pat = BLANK
+}
+
+#THIS IS A TEST
+
+with included variables: ${var}
+
+and patterns: &{pat}
+
+and subpatterns: &{pat.sub_pat}
+
+-{ and inline comments }
+and arrays: @{arr} and nested @{sub.array}
+
+and all the other symbols: !@#$%^&*(){}_+
