@@ -22,7 +22,7 @@ key_chars = @{ (ASCII_ALPHANUMERIC | "_" | ".")* }
 key = @{ key_chars }
 
 value = ${ string | array | "BLANK" | "DEFAULT" }
-assign = _{ key ~ "=" ~ value }
+assign = { key ~ "=" ~ value }
 
 def_block = _{ sigil ~ assign* ~ "}" }
 var_def = { &("$") ~ def_block }
