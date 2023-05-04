@@ -19,13 +19,13 @@ impl<'a> MetaFile<'a> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Source<'a> {
     Str(&'a str),
     Sub(Substitution<'a>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Substitution<'a> {
     Variable(&'a str),
     Array(&'a str),

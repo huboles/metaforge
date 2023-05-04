@@ -1,0 +1,15 @@
+<body>
+    <h1>This is a test for pattern.meta files</h1>
+
+    <p> inserted variable: ${var}</p>
+
+    &{pat}
+
+    @{array}
+
+    <ul>
+        <li> with-{ inline comment} html </li>
+        <li> type syntax including :${blank} blank variables
+        <li> and symbols: !@$%#&*(){}
+    </ul>
+</body>
