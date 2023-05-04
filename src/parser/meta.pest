@@ -1,47 +1,43 @@
 WHITESPACE = _{ " " | "\t" | NEWLINE }
-COMMENT = _{ "-{" ~ (!"}" ~ ANY)* ~ "}" }
+COMMENT    = _{ "-{" ~ (!"}" ~ ANY)* ~ "}" }
 
 sigil = _{ ("$" | "@" | "&") ~ "{" }
 
-raw_char   = _{ !(sigil) ~ ANY }
+raw_char = _{ !(sigil) ~ ANY }
 char_seq =  { raw_char+ }
 
 string = @{ "\"" ~ char+ ~ "\"" }
-char = {
-    !("\"" | "\\") ~ ANY |
-    "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t") |
-    "\\" ~ ("u" ~ ASCII_HEX_DIGIT{4})
+char   =  _{
+    !("\"" | "\\") ~ ANY
+  | "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t")
+  | "\\" ~ ("u" ~ ASCII_HEX_DIGIT{4})
 }
 
-array = {
-    "[" ~ "]" |
-    "[" ~ string ~ ("," ~ string)* ~ "]"
+array = _{
+    "[" ~ "]"
+  | "[" ~ " "* ~ string ~ (" "* ~ "," ~ " "* ~ string)* ~ " "* ~ "]"
 }
 
 key_chars = @{ (ASCII_ALPHANUMERIC | "_" | ".")* }
-key = @{ key_chars }
+key       = @{ key_chars }
 
-value = ${ string | array | "BLANK" | "DEFAULT" }
-assign = { key ~ "=" ~ value }
+value  = ${ string | array | "BLANK" | "DEFAULT" }
+assign =  { key ~ "=" ~ value }
 
-def_block = _{ sigil ~ assign* ~ "}" }
-var_def = { &("$") ~ def_block }
-arr_def = { &("@") ~ def_block }
-pat_def = { &("&") ~ def_block }
+def_block  = _{ sigil ~ assign* ~ "}" }
+var_def    =  { &("$") ~ def_block }
+arr_def    =  { &("@") ~ def_block }
+pat_def    =  { &("&") ~ def_block }
 definition = _{ var_def | arr_def | pat_def }
 
 substitution = _{ sigil ~ key ~ "}" }
-var_sub     =  { &("$") ~ substitution }
-arr_sub     =  { &("@") ~ substitution }
-pat_sub     =  { &("&") ~ substitution }
+var_sub      =  { &("$") ~ substitution }
+arr_sub      =  { &("@") ~ substitution }
+pat_sub      =  { &("&") ~ substitution }
 identifier   = _{ var_sub | pat_sub | arr_sub }
 
 source = { (identifier | char_seq)* }
 
 file = {
-    SOI
-    ~ definition*
-    ~ source?
-    ~ EOI
+    SOI ~ definition* ~ source? ~ EOI
 }
-

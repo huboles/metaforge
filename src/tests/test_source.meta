@@ -6,8 +6,8 @@ ${
 @{
     sub.array = ["sub","value"]
     arr = ["split","up","values"]
-    blank = BLANK
-    -{ with_spaces = [ "stuff", "with" , "spaces" ] }
+    blank = BLANK -{ post line comment }
+    with_spaces = [ "stuff", "with" , "spaces" ]
 }
 
 &{
