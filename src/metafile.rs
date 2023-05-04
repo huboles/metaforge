@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+#[derive(Debug, Default, Clone)]
 pub struct MetaFile<'a> {
     pub variables: HashMap<&'a str, &'a str>,
     pub arrays: HashMap<&'a str, Vec<&'a str>>,
@@ -18,11 +19,13 @@ impl<'a> MetaFile<'a> {
     }
 }
 
+#[derive(Debug, Clone)]
 pub enum Source<'a> {
     Str(&'a str),
     Sub(Substitution<'a>),
 }
 
+#[derive(Debug, Clone)]
 pub enum Substitution<'a> {
     Variable(&'a str),
     Array(&'a str),

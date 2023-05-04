@@ -20,21 +20,24 @@ pub fn parse_pair(pair: Pair<Rule>) -> MetaFile {
     let mut meta_file = MetaFile::new();
 
     if Rule::file == pair.as_rule() {
-        match pair.as_rule() {
-            Rule::source => meta_file.source = parse_source(pair.into_inner()),
-            Rule::var_def => meta_file.variables = parse_defs(pair.into_inner()),
-            Rule::arr_def => meta_file.arrays = parse_array_defs(pair.into_inner()),
-            Rule::pat_def => meta_file.patterns = parse_defs(pair.into_inner()),
-            // anything else is either hidden or children of previous nodes and will be dealt with
-            // in respective parse functions
-            _ => unreachable!(),
+        for pair in pair.into_inner() {
+            match pair.as_rule() {
+                Rule::source => meta_file.source = parse_source(pair.into_inner()),
+                Rule::var_def => meta_file.variables = parse_defs(pair.into_inner()),
+                Rule::arr_def => meta_file.arrays = parse_array_defs(pair.into_inner()),
+                Rule::pat_def => meta_file.patterns = parse_defs(pair.into_inner()),
+                Rule::EOI => (),
+                // anything else is either hidden or children of previous nodes and will be dealt with
+                // in respective parse functions
+                _ => unreachable!(),
+            }
         }
     }
 
     meta_file
 }
 
-fn parse_defs<'a>(pairs: Pairs<'a, Rule>) -> HashMap<&'a str, &'a str> {
+fn parse_defs(pairs: Pairs<Rule>) -> HashMap<&'_ str, &'_ str> {
     let mut map = HashMap::new();
     for pair in pairs {
         if Rule::assign == pair.as_rule() {
@@ -45,7 +48,7 @@ fn parse_defs<'a>(pairs: Pairs<'a, Rule>) -> HashMap<&'a str, &'a str> {
     map
 }
 
-fn parse_array_defs<'a>(pairs: Pairs<'a, Rule>) -> HashMap<&'a str, Vec<&'a str>> {
+fn parse_array_defs(pairs: Pairs<Rule>) -> HashMap<&'_ str, Vec<&'_ str>> {
     let mut map = HashMap::new();
     for pair in pairs {
         if Rule::assign == pair.as_rule() {
@@ -56,7 +59,7 @@ fn parse_array_defs<'a>(pairs: Pairs<'a, Rule>) -> HashMap<&'a str, Vec<&'a str>
     map
 }
 
-fn parse_source<'a>(pairs: Pairs<Rule>) -> Vec<Source> {
+fn parse_source(pairs: Pairs<Rule>) -> Vec<Source> {
     let mut vec: Vec<Source> = Vec::new();
 
     for pair in pairs {
@@ -73,7 +76,7 @@ fn parse_source<'a>(pairs: Pairs<Rule>) -> Vec<Source> {
     vec
 }
 
-fn parse_assign<'a>(pair: Pair<'a, Rule>) -> (&'a str, &'a str) {
+fn parse_assign(pair: Pair<Rule>) -> (&'_ str, &'_ str) {
     let mut key = "";
     let mut val = "";
     for pair in pair.into_inner() {
@@ -88,7 +91,7 @@ fn parse_assign<'a>(pair: Pair<'a, Rule>) -> (&'a str, &'a str) {
     (key, val)
 }
 
-fn parse_assign_array<'a>(pair: Pair<'a, Rule>) -> (&'a str, Vec<&'a str>) {
+fn parse_assign_array(pair: Pair<Rule>) -> (&'_ str, Vec<&'_ str>) {
     let mut key = "";
     let mut val: Vec<&str> = Vec::default();
     for pair in pair.into_inner() {
@@ -103,7 +106,7 @@ fn parse_assign_array<'a>(pair: Pair<'a, Rule>) -> (&'a str, Vec<&'a str>) {
     (key, val)
 }
 
-fn parse_array<'a>(pairs: Pairs<'a, Rule>) -> Vec<&'a str> {
+fn parse_array(pairs: Pairs<Rule>) -> Vec<&'_ str> {
     let mut vec: Vec<&str> = Vec::default();
 
     for pair in pairs {
