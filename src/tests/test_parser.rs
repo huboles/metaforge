@@ -46,12 +46,12 @@ fn build_pattern_file() -> Result<()> {
     let mut pattern_src = parse_file(PATTERN)?.source.into_iter();
 
     pattern_src.next();
-    assert_eq!(pattern_src.next().unwrap(), source!(var("${var}")));
+    assert_eq!(pattern_src.next().unwrap(), source!(var("var")));
     pattern_src.next();
-    assert_eq!(pattern_src.next().unwrap(), source!(pat("&{pat}")));
-    assert_eq!(pattern_src.next().unwrap(), source!(arr("@{array}")));
+    assert_eq!(pattern_src.next().unwrap(), source!(pat("pat")));
+    assert_eq!(pattern_src.next().unwrap(), source!(arr("array")));
     pattern_src.next();
-    assert_eq!(pattern_src.next().unwrap(), source!(var("${blank}")));
+    assert_eq!(pattern_src.next().unwrap(), source!(var("blank")));
 
     Ok(())
 }

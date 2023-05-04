@@ -62,18 +62,42 @@ fn parse_array_defs(pairs: Pairs<Rule>) -> HashMap<&'_ str, Vec<&'_ str>> {
 fn parse_source(pairs: Pairs<Rule>) -> Vec<Source> {
     let mut vec: Vec<Source> = Vec::new();
 
+    macro_rules! push_src (
+        (var($s:expr)) => { vec.push(Source::Sub(Substitution::Variable($s))) };
+        (arr($s:expr)) => { vec.push(Source::Sub(Substitution::Array($s))) };
+        (pat($s:expr)) => { vec.push(Source::Sub(Substitution::Pattern($s))) };
+        ($s:expr) => { vec.push(Source::Str($s)) };
+    );
+
     for pair in pairs {
         match pair.as_rule() {
-            Rule::var_sub => vec.push(Source::Sub(Substitution::Variable(pair.as_str()))),
-            Rule::arr_sub => vec.push(Source::Sub(Substitution::Array(pair.as_str()))),
-            Rule::pat_sub => vec.push(Source::Sub(Substitution::Pattern(pair.as_str()))),
-            Rule::char_seq => vec.push(Source::Str(pair.as_str())),
+            Rule::var_sub => push_src!(var(parse_substitution(pair))),
+            Rule::arr_sub => push_src!(arr(parse_substitution(pair))),
+            Rule::pat_sub => push_src!(pat(parse_substitution(pair))),
+            Rule::char_seq => push_src!(pair.as_str()),
             // anything that isn't a substitution is a char_seq inside source
             _ => unreachable!(),
         }
     }
 
     vec
+}
+
+fn parse_substitution(pair: Pair<Rule>) -> &'_ str {
+    match pair.as_rule() {
+        Rule::var_sub | Rule::arr_sub | Rule::pat_sub => {
+            let str = pair.as_str();
+            // return the value as the inner string for substitution
+            // all substitutions have the format of
+            //      *{ ... }
+            // we return everything except the first
+            // two characters: (sigil and preceding brace)
+            // and the trailing brace
+            &str[2..str.len() - 1]
+        }
+        // this function only gets called to parse substituiton patterns
+        _ => unreachable!(),
+    }
 }
 
 fn parse_assign(pair: Pair<Rule>) -> (&'_ str, &'_ str) {
