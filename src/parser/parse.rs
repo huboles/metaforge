@@ -1,4 +1,4 @@
-use crate::{MetaFile, Source, Substitution};
+use crate::{source, MetaFile, Source, Substitution};
 use color_eyre::Result;
 use pest::{
     iterators::{Pair, Pairs},
@@ -48,7 +48,7 @@ fn parse_defs(pairs: Pairs<Rule>) -> HashMap<&'_ str, &'_ str> {
     map
 }
 
-fn parse_array_defs(pairs: Pairs<Rule>) -> HashMap<&'_ str, Vec<&'_ str>> {
+fn parse_array_defs(pairs: Pairs<Rule>) -> HashMap<&str, Vec<&str>> {
     let mut map = HashMap::new();
     for pair in pairs {
         if Rule::assign == pair.as_rule() {
@@ -60,21 +60,13 @@ fn parse_array_defs(pairs: Pairs<Rule>) -> HashMap<&'_ str, Vec<&'_ str>> {
 }
 
 fn parse_source(pairs: Pairs<Rule>) -> Vec<Source> {
-    let mut vec: Vec<Source> = Vec::new();
-
-    macro_rules! push_src (
-        (var($s:expr)) => { vec.push(Source::Sub(Substitution::Variable($s))) };
-        (arr($s:expr)) => { vec.push(Source::Sub(Substitution::Array($s))) };
-        (pat($s:expr)) => { vec.push(Source::Sub(Substitution::Pattern($s))) };
-        ($s:expr) => { vec.push(Source::Str($s)) };
-    );
-
+    let mut vec = Vec::new();
     for pair in pairs {
         match pair.as_rule() {
-            Rule::var_sub => push_src!(var(parse_substitution(pair))),
-            Rule::arr_sub => push_src!(arr(parse_substitution(pair))),
-            Rule::pat_sub => push_src!(pat(parse_substitution(pair))),
-            Rule::char_seq => push_src!(pair.as_str()),
+            Rule::var_sub => vec.push(source!(var(parse_sub(pair)))),
+            Rule::arr_sub => vec.push(source!(arr(parse_sub(pair)))),
+            Rule::pat_sub => vec.push(source!(pat(parse_sub(pair)))),
+            Rule::char_seq => vec.push(source!(pair.as_str())),
             // anything that isn't a substitution is a char_seq inside source
             _ => unreachable!(),
         }
@@ -83,19 +75,20 @@ fn parse_source(pairs: Pairs<Rule>) -> Vec<Source> {
     vec
 }
 
-fn parse_substitution(pair: Pair<Rule>) -> &'_ str {
+fn parse_sub(pair: Pair<Rule>) -> &'_ str {
     match pair.as_rule() {
         Rule::var_sub | Rule::arr_sub | Rule::pat_sub => {
             let str = pair.as_str();
             // return the value as the inner string for substitution
             // all substitutions have the format of
             //      *{ ... }
-            // we return everything except the first
-            // two characters: (sigil and preceding brace)
-            // and the trailing brace
+            // we return everything except:
+            //      first two characters: (sigil and preceding brace)
+            //      and the trailing brace
             &str[2..str.len() - 1]
         }
         // this function only gets called to parse substituiton patterns
+        // so anything else should never be called
         _ => unreachable!(),
     }
 }
@@ -114,7 +107,10 @@ fn parse_assign(pair: Pair<Rule>) -> (&'_ str, &'_ str) {
             if tmp == "BLANK" || tmp == "DEFAULT" {
                 return ("", "");
             }
-            // remove surrounding quotes from values
+            // remove surrounding quotes from values by returning
+            // everything except first and last characters
+            // a string is defined as " ... " or ' ... '
+            // so it's safe to strip these characters
             val = &tmp[1..tmp.len() - 1];
         }
     }
@@ -122,9 +118,9 @@ fn parse_assign(pair: Pair<Rule>) -> (&'_ str, &'_ str) {
     (key, val)
 }
 
-fn parse_assign_array(pair: Pair<Rule>) -> (&'_ str, Vec<&'_ str>) {
+fn parse_assign_array(pair: Pair<Rule>) -> (&str, Vec<&str>) {
     let mut key = "";
-    let mut val: Vec<&str> = Vec::default();
+    let mut val = Vec::default();
     for pair in pair.into_inner() {
         if Rule::key == pair.as_rule() {
             key = pair.as_str();
@@ -137,7 +133,7 @@ fn parse_assign_array(pair: Pair<Rule>) -> (&'_ str, Vec<&'_ str>) {
     (key, val)
 }
 
-fn parse_array(pairs: Pairs<Rule>) -> Vec<&'_ str> {
+fn parse_array(pairs: Pairs<Rule>) -> Vec<&str> {
     let mut vec: Vec<&str> = Vec::default();
 
     for pair in pairs {

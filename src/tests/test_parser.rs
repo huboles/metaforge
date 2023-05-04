@@ -1,4 +1,4 @@
-use crate::{parse_file, Source, Substitution};
+use crate::{parse_file, source, Source, Substitution};
 use color_eyre::Result;
 
 static SOURCE: &str = include_str!("test_source.meta");
@@ -36,13 +36,6 @@ fn build_meta_file() -> Result<()> {
 
 #[test]
 fn build_pattern_file() -> Result<()> {
-    macro_rules! source (
-        (var($s:literal)) => { Source::Sub(Substitution::Variable($s))};
-        (arr($s:literal)) => { Source::Sub(Substitution::Array($s))};
-        (pat($s:literal)) => { Source::Sub(Substitution::Pattern($s))};
-        ($s:literal) => { Source::Str($s)};
-    );
-
     let mut pattern_src = parse_file(PATTERN)?.source.into_iter();
 
     pattern_src.next();
