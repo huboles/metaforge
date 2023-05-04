@@ -6,7 +6,9 @@ sigil = _{ ("$" | "@" | "&") ~ "{" }
 raw_char = _{ !(sigil) ~ ANY }
 char_seq =  { raw_char+ }
 
-string = @{ "\"" ~ char+ ~ "\"" }
+string = { escaped_string | raw_string }
+escaped_string = @{ "\"" ~ char+ ~ "\"" }
+raw_string = @{ "'" ~ (!("'") ~ ANY)+ ~ "'" }
 char   =  _{
     !("\"" | "\\") ~ ANY
   | "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t")

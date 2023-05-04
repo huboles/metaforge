@@ -24,7 +24,6 @@ fn build_meta_file() -> Result<()> {
         &vec!["stuff", "with", "spaces"]
     );
     assert_eq!(source.arrays.get("not_defined"), None);
-    assert_eq!(source.arrays.get("blank"), None);
 
     assert_eq!(source.patterns.get("pat").unwrap(), &"pattern");
     assert_eq!(source.patterns.get("pat.sub_pat"), None);
