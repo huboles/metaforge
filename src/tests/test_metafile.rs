@@ -1,12 +1,33 @@
-#![allow(dead_code, unused)]
 use crate::{metafile_to_string, parse_file, source, RootDirs, Source, Substitution};
 use color_eyre::Result;
+use pretty_assertions::assert_eq;
 use std::path::PathBuf;
 
-static SOURCE: &str = include_str!("./test_files/test_source.meta");
-static PATTERN: &str = include_str!("./test_files/test_pattern.meta");
-static PRE_EXPAND: &str = include_str!("./test_files/test_expand.meta");
+static SOURCE: &str = include_str!("./test_files/test_site/source/test_source.meta");
+static PATTERN: &str = include_str!("./test_files/test_site/pattern/test/pattern.meta");
+static PRE_EXPAND: &str = include_str!("./test_files/test_site/source/expand.meta");
 static POST_EXPAND: &str = include_str!("./test_files/test_expanded");
+
+// builds a tmp_dir then runs multiple tests on it, then deletes the tmpdir
+// so we don't have to rebuild entire tmpdir every test
+fn test_on_tmp_dir(tests: Vec<fn(dirs: &RootDirs) -> Result<()>>) -> Result<()> {
+    let tmp_dir = std::env::temp_dir();
+
+    let dirs = RootDirs {
+        source: tmp_dir.join("source"),
+        build: tmp_dir.join("site"),
+        pattern: tmp_dir.join("pattern"),
+    };
+
+    for test in tests.iter() {
+        std::fs::remove_dir_all(&dirs.build)?;
+        std::fs::create_dir(&dirs.build)?;
+        test(&dirs)?;
+    }
+
+    std::fs::remove_dir_all(tmp_dir)?;
+    Ok(())
+}
 
 #[test]
 fn test_metafile_gets() -> Result<()> {
@@ -78,17 +99,19 @@ fn parse_pattern_file() -> Result<()> {
     Ok(())
 }
 
-#[ignore = "todo: build tmp directory"]
 #[test]
-fn test_metafile_to_str() -> Result<()> {
-    let metafile = parse_file(PRE_EXPAND)?;
-    let dirs = RootDirs {
-        source: PathBuf::new(),
-        build: PathBuf::new(),
-        pattern: PathBuf::new(),
-    };
+fn builder_tests() -> Result<()> {
+    // vector of tests to perform on tmp_dir
+    let mut tests: Vec<fn(dirs: &RootDirs) -> Result<()>> = Vec::default();
+    tests.push(test_metafile_to_str);
+    test_on_tmp_dir(tests)?;
+    Ok(())
+}
 
-    let file = metafile_to_string(&metafile, &dirs, None)?;
+fn test_metafile_to_str(dirs: &RootDirs) -> Result<()> {
+    let metafile = parse_file(PRE_EXPAND)?;
+
+    let file = metafile_to_string(&metafile, dirs, None)?;
 
     assert_eq!(file, POST_EXPAND);
 
