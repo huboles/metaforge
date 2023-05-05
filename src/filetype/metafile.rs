@@ -1,4 +1,5 @@
-use std::{collections::HashMap, path::PathBuf};
+use crate::Source;
+use std::collections::HashMap;
 
 #[derive(Debug, Default, Clone)]
 pub struct MetaFile<'a> {
@@ -9,8 +10,8 @@ pub struct MetaFile<'a> {
 }
 
 impl<'a> MetaFile<'a> {
-    pub fn new() -> MetaFile<'a> {
-        MetaFile {
+    pub fn new() -> Self {
+        Self {
             variables: HashMap::new(),
             arrays: HashMap::new(),
             patterns: HashMap::new(),
@@ -29,32 +30,4 @@ impl<'a> MetaFile<'a> {
     pub fn get_pat(&self, key: &str) -> Option<&str> {
         self.patterns.get(key).copied()
     }
-}
-
-#[macro_export]
-macro_rules! source (
-    (var($s:expr)) => { Source::Sub(Substitution::Variable($s))};
-    (arr($s:expr)) => { Source::Sub(Substitution::Array($s))};
-    (pat($s:expr)) => { Source::Sub(Substitution::Pattern($s))};
-    ($s:expr) => { Source::Str($s)};
-);
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Source<'a> {
-    Str(&'a str),
-    Sub(Substitution<'a>),
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Substitution<'a> {
-    Variable(&'a str),
-    Array(&'a str),
-    Pattern(&'a str),
-}
-
-#[derive(Debug, Clone)]
-pub struct RootDirs {
-    pub source: PathBuf,
-    pub build: PathBuf,
-    pub pattern: PathBuf,
 }
