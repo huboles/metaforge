@@ -16,7 +16,7 @@ pub fn parse_file(file: &str) -> Result<MetaFile> {
     Ok(parse_pair(meta_source))
 }
 
-pub fn parse_pair(pair: Pair<Rule>) -> MetaFile {
+fn parse_pair(pair: Pair<Rule>) -> MetaFile {
     let mut meta_file = MetaFile::new();
 
     if Rule::file == pair.as_rule() {
@@ -26,7 +26,8 @@ pub fn parse_pair(pair: Pair<Rule>) -> MetaFile {
                 Rule::var_def => meta_file.variables = parse_defs(pair.into_inner()),
                 Rule::arr_def => meta_file.arrays = parse_array_defs(pair.into_inner()),
                 Rule::pat_def => meta_file.patterns = parse_defs(pair.into_inner()),
-                Rule::EOI => (),
+                // do nothing on end of file
+                Rule::EOI => continue,
                 // anything else is either hidden or children of previous nodes and will be dealt with
                 // in respective parse functions
                 _ => unreachable!(),
@@ -96,6 +97,7 @@ fn parse_sub(pair: Pair<Rule>) -> &'_ str {
 fn parse_assign(pair: Pair<Rule>) -> (&'_ str, &'_ str) {
     let mut key = "";
     let mut val = "";
+
     for pair in pair.into_inner() {
         if Rule::key == pair.as_rule() {
             key = pair.as_str();
@@ -103,7 +105,7 @@ fn parse_assign(pair: Pair<Rule>) -> (&'_ str, &'_ str) {
         if Rule::value == pair.as_rule() {
             let tmp = pair.as_str();
             // blank and default shoud be handled by whoever is getting the value
-            // set it to empty strings do remove it from the HashMap
+            // set it to empty strings to remove it from the HashMap
             if tmp == "BLANK" || tmp == "DEFAULT" {
                 return ("", "");
             }
@@ -121,6 +123,7 @@ fn parse_assign(pair: Pair<Rule>) -> (&'_ str, &'_ str) {
 fn parse_assign_array(pair: Pair<Rule>) -> (&str, Vec<&str>) {
     let mut key = "";
     let mut val = Vec::default();
+
     for pair in pair.into_inner() {
         if Rule::key == pair.as_rule() {
             key = pair.as_str();
@@ -140,9 +143,11 @@ fn parse_array(pairs: Pairs<Rule>) -> Vec<&str> {
         if Rule::string == pair.as_rule() {
             let tmp = pair.as_str();
             // remove surrounding quotes from values
+            // see parse_assign() for reasoning
             let val = &tmp[1..tmp.len() - 1];
             vec.push(val);
         }
     }
+
     vec
 }

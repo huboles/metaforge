@@ -1,7 +1,10 @@
-use crate::parse_file;
+use crate::{metafile_to_string, parse_file, RootDirs};
 use color_eyre::Result;
+use std::path::PathBuf;
 
 static SOURCE: &str = include_str!("test_source.meta");
+static PRE_EXPAND: &str = include_str!("test_expand.meta");
+static POST_EXPAND: &str = include_str!("test_expanded");
 
 #[test]
 fn test_metafile_gets() -> Result<()> {
@@ -24,6 +27,22 @@ fn test_metafile_gets() -> Result<()> {
     assert_eq!(source.get_pat("pat.sub_pat"), None);
     assert_eq!(source.get_pat("blank_pat"), None);
     assert_eq!(source.get_pat("not_defined"), None);
+
+    Ok(())
+}
+
+#[test]
+fn test_metafile_to_str() -> Result<()> {
+    let metafile = parse_file(PRE_EXPAND)?;
+    let dirs = RootDirs {
+        source: PathBuf::new(),
+        build: PathBuf::new(),
+        pattern: PathBuf::new(),
+    };
+
+    let file = metafile_to_string(&metafile, &dirs, None)?;
+
+    assert_eq!(file, "");
 
     Ok(())
 }

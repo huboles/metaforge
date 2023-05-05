@@ -5,7 +5,7 @@ static SOURCE: &str = include_str!("test_source.meta");
 static PATTERN: &str = include_str!("test_pattern.meta");
 
 #[test]
-fn build_meta_file() -> Result<()> {
+fn parse_meta_file() -> Result<()> {
     let source = parse_file(SOURCE)?;
 
     assert_eq!(source.variables.get("var").unwrap(), &"good");
@@ -35,7 +35,7 @@ fn build_meta_file() -> Result<()> {
 }
 
 #[test]
-fn build_pattern_file() -> Result<()> {
+fn parse_pattern_file() -> Result<()> {
     let mut pattern_src = parse_file(PATTERN)?.source.into_iter();
 
     pattern_src.next();

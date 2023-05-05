@@ -12,7 +12,7 @@ pub fn build_metafile(file: &MetaFile, dirs: &RootDirs, path: &Path) -> Result<(
     )?)
 }
 
-fn metafile_to_string(file: &MetaFile, dirs: &RootDirs, name: Option<&str>) -> Result<String> {
+pub fn metafile_to_string(file: &MetaFile, dirs: &RootDirs, name: Option<&str>) -> Result<String> {
     let mut output = String::default();
 
     for section in file.source.iter() {
