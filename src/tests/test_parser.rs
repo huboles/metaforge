@@ -1,50 +1,54 @@
-use crate::{parse_file, source, Source, Substitution};
-use color_eyre::Result;
+use crate::parse_file;
 
-static SOURCE: &str = include_str!("test_source.meta");
-static PATTERN: &str = include_str!("test_pattern.meta");
+macro_rules! test_str (
+    ($s: expr) => {
+        let str = $s;
+        parse_file(str).unwrap();
+    };
+);
 
 #[test]
-fn parse_meta_file() -> Result<()> {
-    let source = parse_file(SOURCE)?;
-
-    assert_eq!(source.variables.get("var").unwrap(), &"good");
-    assert_eq!(source.variables.get("blank"), None);
-    assert_eq!(source.variables.get("not_here"), None);
-
-    assert_eq!(
-        source.arrays.get("sub.array").unwrap(),
-        &vec!["sub", "value"]
-    );
-    assert_eq!(
-        source.arrays.get("arr").unwrap(),
-        &vec!["split", "up", "values"]
-    );
-    assert_eq!(
-        source.arrays.get("with_spaces").unwrap(),
-        &vec!["stuff", "with", "spaces"]
-    );
-    assert_eq!(source.arrays.get("not_defined"), None);
-
-    assert_eq!(source.patterns.get("pat").unwrap(), &"pattern");
-    assert_eq!(source.patterns.get("pat.sub_pat"), None);
-    assert_eq!(source.patterns.get("blank_pat"), None);
-    assert_eq!(source.patterns.get("not_defined"), None);
-
-    Ok(())
+fn no_spaces_def() {
+    test_str!(r#"${v='v'}@{a=['a']}&{p='p'}"#);
 }
 
 #[test]
-fn parse_pattern_file() -> Result<()> {
-    let mut pattern_src = parse_file(PATTERN)?.source.into_iter();
+fn just_source() {
+    test_str!(r#"This is just a &{source} snippet"#);
+}
 
-    pattern_src.next();
-    assert_eq!(pattern_src.next().unwrap(), source!(var("var")));
-    pattern_src.next();
-    assert_eq!(pattern_src.next().unwrap(), source!(pat("pat")));
-    assert_eq!(pattern_src.next().unwrap(), source!(arr("array")));
-    pattern_src.next();
-    assert_eq!(pattern_src.next().unwrap(), source!(var("blank")));
+#[test]
+#[should_panic]
+fn key_with_spaces() {
+    test_str!(r#"${ key with spaces = "value" }"#);
+}
 
-    Ok(())
+#[test]
+#[should_panic]
+fn value_missing_quote() {
+    test_str!(r#"${ key = "value missing quote }"#);
+}
+
+#[test]
+#[should_panic]
+fn mixed_quotes() {
+    test_str!(r#"${ key = "value mixing quotes' }"#);
+}
+
+#[test]
+#[should_panic]
+fn spaces_in_substitution() {
+    test_str!(r#"This ${variable is not allowed}"#);
+}
+
+#[test]
+#[should_panic]
+fn missing_closing_brace() {
+    test_str!(r#"${ key = "value" "#);
+}
+
+#[test]
+#[should_panic]
+fn map_in_source() {
+    test_str!(r#"This map: ${ is = "invalid" }"#);
 }

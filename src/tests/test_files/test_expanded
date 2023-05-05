@@ -1,0 +1,18 @@
+TESTS:
+
+var1 [val1]: val1
+var2 [BLANK]: 
+var3 [value with spaces]: value with spaces
+
+arr1 [val1]: val1
+arr3 [BLANK]: 
+
+Pattern subs:
+
+pat1 [with array]: <p>value</p><p>value with spaces</p>
+pat2: 
+    .sub_pat: <h1>SUBPATTERN</h1>
+    .default: <h1>DEFAULT</h1>
+    .blank: 
+
+This comment should not be rendered: 
