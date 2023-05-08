@@ -1,37 +1,36 @@
 ${
-    var1 = "val1"
+    var1 = "GOOD"
     var2 = BLANK
-    var3 = 'value with spaces'
+    var3 = 'GOOD GOOD'
 }
 
 @{
-    arr1 = ['val1']
+    arr1 = ['GOOD']
     arr2 = []
-    pat1.arr = ["value", "value with spaces"]
+    test.array = ["GOOD", "GOOD GOOD"]
 }
 
 &{
-    pat1 = "pattern"
-    pat2.sub_pat = 'sub_pattern'
-    pat2.default = DEFAULT
-    pat2.blank = BLANK
+    test = "array"
+    test.sub_pat = 'sub_pattern'
+    test.default = DEFAULT
+    test.blank = BLANK
 }
 
 TESTS:
 
-var1 [val1]: ${var1}
+var1 [VALUE]: ${var1}
 var2 [BLANK]: ${var2}
-var3 [value with spaces]: ${var3}
+var3 [VAL WITH SPACES]: ${var3}
 
-arr1 [val1]: @{arr1}
-arr3 [BLANK]: @{arr2}
+arr1 [VALUE]: @{arr1}
+arr2 [BLANK]: @{arr2}
 
 Pattern subs:
 
-pat1 [with array]: &{pat1}
-pat2: 
-    .sub_pat: &{pat2.sub_pat}
-    .default: &{pat2.default}
-    .blank: &{pat2.blank}
+test [WITH ARRAY]: &{test}
+test.sub_pat: &{test.sub_pat}
+test.default: &{test.default}
+test.blank: &{test.blank}
 
 This comment should not be rendered: -{arr1}

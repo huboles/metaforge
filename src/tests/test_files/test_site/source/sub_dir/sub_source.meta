@@ -1,0 +1,33 @@
+${
+    overwrite = 'GOOD'
+    new = 'GOOD'
+    blank = BLANK
+}
+
+@{
+    overwrite = ['GOOD']
+    new = ['GOOD']
+}
+
+&{
+    test.overwrite = 'overwrite'
+    test.new = 'new'
+    test.blank = BLANK
+    test.default = DEFAULT
+}
+
+This is a test for a file in a sub_directory to test
+overwriting variables and patterns.
+
+var [OVERWRITE]: ${overwrite}
+var [PARENT]: ${parent}
+var [NEW]: ${new}
+var [BLANK]: ${blank}
+
+arr [OVERWRITE]: @{overwrite}
+arr [NEW]: @{new}
+
+pat [OVERWRITE]: &{test.overwrite}
+pat [NEW]: &{test.new}
+pat [BLANK]: &{test.blank}
+pat [DEFAULT]: &{test.default}
