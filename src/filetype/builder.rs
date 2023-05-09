@@ -2,6 +2,7 @@ use crate::{parse_file, MetaFile, RootDirs, Source, Substitution};
 use color_eyre::Result;
 use std::{
     collections::HashMap,
+    fs,
     path::{Path, PathBuf},
 };
 
@@ -18,7 +19,9 @@ pub fn metafile_to_string(file: &MetaFile, dirs: &RootDirs, name: Option<&str>) 
     for section in file.source.iter() {
         match section {
             // concatenate any char sequences
-            Source::Str(str) => output.push_str(str),
+            Source::Str(str) => {
+                output.push_str(str);
+            }
             // expand all variables and recursively expand patterns
             Source::Sub(sub) => {
                 let expanded = match sub {
@@ -31,25 +34,23 @@ pub fn metafile_to_string(file: &MetaFile, dirs: &RootDirs, name: Option<&str>) 
                     // so we use them to mark keys for array substitution
                     Substitution::Array(key) => format!("-{{{key}}}"),
                 };
-                output.push_str(&expanded);
+                output.push_str(&format!("\n{}\n", expanded));
             }
         }
     }
 
     // deal with arrays
-    Ok(expand_arrays(output, file, name)?)
+    expand_arrays(output, file, name)
 }
 
 fn get_pattern(key: &str, file: &MetaFile, dirs: &RootDirs) -> Result<String> {
-    let filename = match file.get_pat(key) {
-        Some(file) => file,
-        None => "default",
-    };
+    let filename = file.get_pat(key).unwrap_or("default");
 
     let pattern_path = key.replace('.', "/") + "/" + filename;
-    let mut path = dirs.pattern.join(pattern_path).canonicalize()?;
-    path.set_extension(".meta");
-    let pattern = parse_file(path.to_str().unwrap_or_default())?;
+    let mut path = dirs.pattern.join(pattern_path);
+    path.set_extension("meta");
+    let pattern = &fs::read_to_string(path.to_str().unwrap_or_default())?;
+    let pattern = parse_file(pattern)?;
     metafile_to_string(&pattern, dirs, Some(key))
 }
 
@@ -76,7 +77,13 @@ fn expand_arrays(output: String, file: &MetaFile, name: Option<&str>) -> Result<
         })
         // make a hash map of keys in the source to previously defined arrays
         .map(|array| {
-            let key = name.unwrap_or_default().to_owned() + "." + array;
+            let key: String;
+            if let Some(name) = name {
+                key = name.to_owned() + "." + array;
+            } else {
+                key = array.to_string();
+            }
+            // let key = dbg!(name.unwrap_or_default().to_owned() + "." + array);
             let value = file.get_arr(&key).unwrap_or_default();
             (*array, value)
         })
@@ -84,16 +91,26 @@ fn expand_arrays(output: String, file: &MetaFile, name: Option<&str>) -> Result<
 
     let mut expanded = String::new();
     // loop to duplicate the output template for each array member
-    for i in 0.. {
+    for i in 0..get_max_size(&map) {
         // get a fresh copy of the file
         let mut str = output.clone();
         // replace each key in the file
         for (key, val) in map.iter() {
-            str = str.replace(&format!("-{{{key}}}"), val[i]);
+            str = str.replace(&format!("-{{{key}}}"), val.get(i).unwrap_or(&""));
         }
         // concatenate to final file
         expanded.push_str(&str);
     }
 
     Ok(expanded)
+}
+
+fn get_max_size(map: &HashMap<&str, &[&str]>) -> usize {
+    let mut max = 0;
+    for val in map.values() {
+        if max < val.len() {
+            max = val.len();
+        }
+    }
+    max
 }

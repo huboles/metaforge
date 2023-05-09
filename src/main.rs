@@ -1,6 +1,8 @@
 extern crate pest;
 extern crate pest_derive;
 
-fn main() {
-    println!("Hello, world!");
+use color_eyre::Result;
+
+fn main() -> Result<()> {
+    Ok(())
 }

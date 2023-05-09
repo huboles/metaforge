@@ -1,0 +1,25 @@
+TESTS:
+
+var1 [VALUE]:
+GOOD
+var2 [BLANK]:
+
+var3 [VAL WITH SPACES]:
+GOOD GOOD
+
+arr1 [VALUE]:
+GOOD
+arr2 [BLANK]:
+
+Pattern subs:
+
+test [WITH ARRAY]: 
+<p>GOOD</p>
+<p>GOOD GOOD</p>
+test.sub_pat:
+<h1>SUBPATTERN</h1>
+test.default:
+<h1>DEFAULT</h1>
+test.blank: 
+
+This comment should not be rendered: 

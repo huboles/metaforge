@@ -1,12 +1,10 @@
 use crate::{metafile_to_string, parse_file, source, RootDirs, Source, Substitution};
 use color_eyre::Result;
 use pretty_assertions::assert_eq;
-use std::fs;
+use std::{fs, path::PathBuf};
 
-static SOURCE: &str = include_str!("test_files/test_site/source/test_source.meta");
-static PATTERN: &str = include_str!("test_files/test_site/pattern/test/pattern.meta");
-static PRE_EXPAND: &str = include_str!("test_files/test_site/source/expand.meta");
-static POST_EXPAND: &str = include_str!("test_files/expanded");
+static SOURCE: &str = include_str!("../../tests/files/test_site/source/test_source.meta");
+static PATTERN: &str = include_str!("../../tests/files//test_site/pattern/test/pattern.meta");
 
 #[test]
 fn test_metafile_gets() -> Result<()> {
@@ -76,54 +74,6 @@ fn parse_pattern_file() -> Result<()> {
     assert_eq!(pattern_src.next().unwrap(), source!(pat("pattern")));
     pattern_src.next();
     assert_eq!(pattern_src.next(), None);
-
-    Ok(())
-}
-
-#[ignore = "Need to setup tmp dir first"]
-#[test]
-fn builder_tests() -> Result<()> {
-    // vector of tests to perform on tmp_dir
-    let mut tests: Vec<fn(dirs: &RootDirs) -> Result<()>> = Vec::default();
-    tests.push(test_metafile_to_str);
-
-    // run tests on tmp dir
-    test_on_tmp_dir(tests)?;
-    Ok(())
-}
-
-// builds a tmp_dir
-// runs multiple tests on it,
-// sanitizes build_dir between tests
-// deletes the tmpdir
-// so we don't have to rebuild entire tmpdir every test
-fn test_on_tmp_dir(tests: Vec<fn(dirs: &RootDirs) -> Result<()>>) -> Result<()> {
-    let tmp_dir = std::env::temp_dir();
-
-    let dirs = RootDirs {
-        source: tmp_dir.join("source"),
-        build: tmp_dir.join("site"),
-        pattern: tmp_dir.join("pattern"),
-    };
-
-    for test in tests.iter() {
-        // delete and remake build dir
-        fs::remove_dir_all(&dirs.build)?;
-        fs::create_dir(&dirs.build)?;
-        // run test
-        test(&dirs)?;
-    }
-
-    fs::remove_dir_all(tmp_dir)?;
-    Ok(())
-}
-
-fn test_metafile_to_str(dirs: &RootDirs) -> Result<()> {
-    let metafile = parse_file(PRE_EXPAND)?;
-
-    let file = metafile_to_string(&metafile, dirs, None)?;
-
-    assert_eq!(file, POST_EXPAND);
 
     Ok(())
 }

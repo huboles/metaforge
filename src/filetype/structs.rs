@@ -21,7 +21,7 @@ pub enum Substitution<'a> {
     Pattern(&'a str),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct RootDirs {
     pub source: PathBuf,
     pub build: PathBuf,
