@@ -1,21 +1,22 @@
 ${
-    var1 = "GOOD"
+    var1 = 'GOOD'
     var2 = BLANK
     var3 = 'GOOD GOOD'
 }
 
 @{
-    arr1 = ['GOOD']
+    arr1 = [ 'GOOD' ]
     arr2 = []
-    test.arr = ["GOOD", "GOOD GOOD"]
+    test.arr = [ 'GOOD', 'GOOD GOOD' ]
 }
 
 &{
-    test = "array"
+    test = 'array'
     test.sub_pat = 'sub_pattern'
-    test.default = DEFAULT
     test.blank = BLANK
+    test.default = DEFAULT
 }
+
 
 TESTS:
 

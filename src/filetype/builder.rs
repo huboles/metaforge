@@ -1,20 +1,37 @@
 use crate::{parse_file, MetaFile, RootDirs, Source, Substitution};
-use color_eyre::Result;
+use color_eyre::{eyre::bail, Result};
+use pandoc::{InputFormat, InputKind, OutputFormat, OutputKind, Pandoc, PandocOutput};
 use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
 };
 
-pub fn build_metafile(file: &MetaFile, dirs: &RootDirs, path: &Path) -> Result<()> {
-    Ok(std::fs::write(
-        find_dest(path, dirs)?,
-        metafile_to_string(file, dirs, None)?,
-    )?)
+pub fn build_metafile(path: &Path, dirs: &RootDirs) -> Result<()> {
+    eprintln!("{:?}", path);
+    let file = fs::read_to_string(path)?;
+    let file = parse_file(&file)?;
+
+    let pattern = get_pattern("base", &file, dirs)?;
+    let mut base = parse_file(&pattern)?;
+
+    let html = get_source_html(&file, dirs)?;
+
+    base.variables = file.variables;
+    base.arrays = file.arrays;
+    base.patterns = file.patterns;
+
+    base.patterns.insert("SOURCE", &html);
+
+    let output = metafile_to_string(&base, dirs, Some("base"))?;
+
+    fs::write(find_dest(path, dirs)?, output)?;
+    Ok(())
 }
 
 pub fn metafile_to_string(file: &MetaFile, dirs: &RootDirs, name: Option<&str>) -> Result<String> {
     let mut output = String::default();
+    let mut arrays = false;
 
     for section in file.source.iter() {
         match section {
@@ -27,30 +44,77 @@ pub fn metafile_to_string(file: &MetaFile, dirs: &RootDirs, name: Option<&str>) 
                 let expanded = match sub {
                     Substitution::Variable(key) => file
                         .get_var(key)
+                        // blank and default dont need to be processed
+                        .filter(|val| *val != "BLANK" && *val != "DEFAULT")
                         .map(|val| val.to_string())
                         .unwrap_or_default(),
                     Substitution::Pattern(key) => get_pattern(key, file, dirs)?,
                     // comments have already been removed at this point,
                     // so we use them to mark keys for array substitution
-                    Substitution::Array(key) => format!("-{{{key}}}"),
+                    Substitution::Array(key) => {
+                        arrays = true;
+                        format!("-{{{key}}}")
+                    }
                 };
                 output.push_str(&format!("\n{}\n", expanded));
             }
         }
     }
 
-    // deal with arrays
-    expand_arrays(output, file, name)
+    if arrays {
+        expand_arrays(output, file, name)
+    } else {
+        Ok(output)
+    }
+}
+
+fn get_source_html(file: &MetaFile, dirs: &RootDirs) -> Result<String> {
+    let file = metafile_to_string(file, dirs, Some("SOURCE"))?;
+    let mut pandoc = Pandoc::new();
+
+    pandoc
+        .set_input(InputKind::Pipe(file))
+        .set_output(OutputKind::Pipe)
+        .set_input_format(InputFormat::Markdown, vec![])
+        .set_output_format(OutputFormat::Html, vec![]);
+
+    if let Ok(PandocOutput::ToBuffer(html)) = pandoc.execute() {
+        Ok(html)
+    } else {
+        bail!("pandoc could not write to buffer")
+    }
 }
 
 fn get_pattern(key: &str, file: &MetaFile, dirs: &RootDirs) -> Result<String> {
-    let filename = file.get_pat(key).unwrap_or("default");
+    // SOURCE is already expanded in the initial build_metafile() call
+    // we just need to return that
+    if key == "SOURCE" {
+        let source = file.patterns.get("SOURCE").unwrap_or(&"");
+        return Ok(source.to_string());
+    }
+
+    let mut filename = file.get_pat(key).unwrap_or("default");
+    // BLANK returns nothing, so no more processing needs to be done
+    if filename == "BLANK" {
+        return Ok(String::new());
+    };
+
+    if filename == "DEFAULT" {
+        filename = "default";
+    }
 
     let pattern_path = key.replace('.', "/") + "/" + filename;
     let mut path = dirs.pattern.join(pattern_path);
     path.set_extension("meta");
+
     let pattern = &fs::read_to_string(path.to_str().unwrap_or_default())?;
-    let pattern = parse_file(pattern)?;
+    let mut pattern = parse_file(pattern)?;
+
+    // copy over maps for expanding contained variables
+    pattern.variables = file.variables.clone();
+    pattern.arrays = file.arrays.clone();
+    pattern.patterns = file.patterns.clone();
+
     metafile_to_string(&pattern, dirs, Some(key))
 }
 
@@ -75,7 +139,7 @@ fn expand_arrays(output: String, file: &MetaFile, name: Option<&str>) -> Result<
                 None
             }
         })
-        // make a hash map of keys in the source to previously defined arrays
+        // make a hash map of [keys in source] -> [defined arrays]
         .map(|array| {
             let key: String;
             if let Some(name) = name {

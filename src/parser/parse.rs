@@ -84,8 +84,8 @@ fn parse_sub(pair: Pair<Rule>) -> &'_ str {
             // all substitutions have the format of
             //      *{ ... }
             // we return everything except:
-            //      first two characters: (sigil and preceding brace)
-            //      and the trailing brace
+            //      first two chars (sigil and preceding brace)
+            //      last char (trailing brace)
             &str[2..str.len() - 1]
         }
         // this function only gets called to parse substituiton patterns
@@ -105,9 +105,8 @@ fn parse_assign(pair: Pair<Rule>) -> (&'_ str, &'_ str) {
         if Rule::value == pair.as_rule() {
             let tmp = pair.as_str();
             // blank and default shoud be handled by whoever is getting the value
-            // set it to empty strings to remove it from the HashMap
             if tmp == "BLANK" || tmp == "DEFAULT" {
-                return ("", "");
+                return (key, tmp);
             }
             // remove surrounding quotes from values by returning
             // everything except first and last characters
