@@ -1,9 +1,10 @@
-use crate::{parse_file, source, Source, Substitution};
+use crate::{metafile_to_string, parse_file, source, RootDirs, Source, Substitution};
 use color_eyre::Result;
 use pretty_assertions::assert_eq;
+use std::{fs, path::PathBuf};
 
-static SOURCE: &str = include_str!("../../test_site/source/test_source.meta");
-static PATTERN: &str = include_str!("../../test_site/pattern/test/pattern.meta");
+static SOURCE: &str = include_str!("../../tests/files/test_site/source/test_source.meta");
+static PATTERN: &str = include_str!("../../tests/files//test_site/pattern/test/pattern.meta");
 
 #[test]
 fn test_metafile_gets() -> Result<()> {
@@ -11,7 +12,7 @@ fn test_metafile_gets() -> Result<()> {
 
     assert_eq!(source.get_var("var").unwrap(), "GOOD");
     assert_eq!(source.get_var("single_quotes").unwrap(), "GOOD");
-    assert_eq!(source.get_var("blank").unwrap(), "BLANK");
+    assert_eq!(source.get_var("blank"), None);
     assert_eq!(source.get_var("not_defined"), None);
 
     assert_eq!(source.get_arr("sub.array").unwrap(), ["GOOD", "GOOD"]);
@@ -23,8 +24,8 @@ fn test_metafile_gets() -> Result<()> {
     assert_eq!(source.get_arr("not_defined"), None);
 
     assert_eq!(source.get_pat("test").unwrap(), "pattern");
-    assert_eq!(source.get_pat("test.sub_pat").unwrap(), "DEFAULT");
-    assert_eq!(source.get_pat("blank_pat").unwrap(), "BLANK");
+    assert_eq!(source.get_pat("test.sub_pat"), None);
+    assert_eq!(source.get_pat("blank_pat"), None);
     assert_eq!(source.get_pat("not_defined"), None);
 
     Ok(())
@@ -35,7 +36,7 @@ fn parse_meta_file() -> Result<()> {
     let source = parse_file(SOURCE)?;
 
     assert_eq!(source.variables.get("var").unwrap(), &"GOOD");
-    assert_eq!(source.variables.get("blank").unwrap(), &"BLANK");
+    assert_eq!(source.variables.get("blank"), None);
     assert_eq!(source.variables.get("not_here"), None);
 
     assert_eq!(
@@ -53,8 +54,8 @@ fn parse_meta_file() -> Result<()> {
     assert_eq!(source.arrays.get("not_defined"), None);
 
     assert_eq!(source.patterns.get("test").unwrap(), &"pattern");
-    assert_eq!(source.patterns.get("test.sub_pat").unwrap(), &"DEFAULT");
-    assert_eq!(source.patterns.get("blank_pat").unwrap(), &"BLANK");
+    assert_eq!(source.patterns.get("test.sub_pat"), None);
+    assert_eq!(source.patterns.get("blank_pat"), None);
     assert_eq!(source.patterns.get("not_defined"), None);
 
     Ok(())

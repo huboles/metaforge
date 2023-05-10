@@ -104,15 +104,11 @@ fn parse_assign(pair: Pair<Rule>) -> (&'_ str, &'_ str) {
         }
         if Rule::value == pair.as_rule() {
             let tmp = pair.as_str();
-
-            if tmp == "BLANK" {
-                return (key, "BLANK");
+            // blank and default shoud be handled by whoever is getting the value
+            // set it to empty strings to remove it from the HashMap
+            if tmp == "BLANK" || tmp == "DEFAULT" {
+                return ("", "");
             }
-
-            if tmp == "DEFAULT" {
-                return (key, "DEFAULT");
-            }
-
             // remove surrounding quotes from values by returning
             // everything except first and last characters
             // a string is defined as " ... " or ' ... '

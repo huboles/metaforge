@@ -3,7 +3,7 @@ use metaforge::*;
 use pretty_assertions::assert_eq;
 use std::{fs, path::PathBuf};
 
-static PRE_EXPAND: &str = include_str!("../test_site/source/expand.meta");
+static PRE_EXPAND: &str = include_str!("./files/test_site/source/expand.meta");
 static POST_EXPAND: &str = include_str!("./files/expanded");
 
 #[test]
@@ -13,14 +13,13 @@ fn test_metafile_to_str() -> Result<()> {
 
     let file = metafile_to_string(&metafile, &dirs, None)?;
 
-    eprintln!("{}", file);
-    assert_eq!(file + "\n", POST_EXPAND);
+    assert_eq!(file, POST_EXPAND);
 
     Ok(())
 }
 
 fn build_rootdir() -> Result<RootDirs> {
-    let dir = PathBuf::from("./test_site");
+    let dir = PathBuf::from("./tests/files/test_site");
 
     let dirs = RootDirs {
         source: dir.join("source"),
