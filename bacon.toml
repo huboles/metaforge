@@ -24,8 +24,8 @@ command = [
 need_stdout = false
 
 [jobs.test]
-command = [ "cargo", "test", "--color", "always" ]
-need_stdout = true
+command = [ "cargo", "test", "--color", "always", "--", "--color", "always" ]
+need_stdout = false
 
 [jobs.doc]
 command = ["cargo", "doc", "--color", "always", "--no-deps"]

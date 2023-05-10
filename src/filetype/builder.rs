@@ -14,7 +14,8 @@ pub fn build_metafile(file: &MetaFile, dirs: &RootDirs, path: &Path) -> Result<(
 }
 
 pub fn metafile_to_string(file: &MetaFile, dirs: &RootDirs, name: Option<&str>) -> Result<String> {
-    let mut output = String::default();
+    let mut output = String::new();
+    let mut arrays = false;
 
     for section in file.source.iter() {
         match section {
@@ -27,30 +28,53 @@ pub fn metafile_to_string(file: &MetaFile, dirs: &RootDirs, name: Option<&str>) 
                 let expanded = match sub {
                     Substitution::Variable(key) => file
                         .get_var(key)
+                        .filter(|val| *val != "BLANK")
                         .map(|val| val.to_string())
                         .unwrap_or_default(),
                     Substitution::Pattern(key) => get_pattern(key, file, dirs)?,
                     // comments have already been removed at this point,
                     // so we use them to mark keys for array substitution
-                    Substitution::Array(key) => format!("-{{{key}}}"),
+                    Substitution::Array(key) => {
+                        arrays = true;
+                        format!("-{{{key}}}")
+                    }
                 };
                 output.push_str(&format!("\n{}\n", expanded));
             }
         }
     }
 
+    println!("{}", output);
+
     // deal with arrays
-    expand_arrays(output, file, name)
+    if arrays {
+        expand_arrays(output, file, name)
+    } else {
+        Ok(output)
+    }
 }
 
 fn get_pattern(key: &str, file: &MetaFile, dirs: &RootDirs) -> Result<String> {
-    let filename = file.get_pat(key).unwrap_or("default");
+    let mut filename = file.get_pat(key).unwrap_or("default");
+    if filename == "BLANK" {
+        return Ok(String::new());
+    };
+
+    if filename == "DEFAULT" {
+        filename = "default";
+    }
 
     let pattern_path = key.replace('.', "/") + "/" + filename;
     let mut path = dirs.pattern.join(pattern_path);
     path.set_extension("meta");
+    eprintln!("{:?}", path);
     let pattern = &fs::read_to_string(path.to_str().unwrap_or_default())?;
-    let pattern = parse_file(pattern)?;
+    let mut pattern = parse_file(pattern)?;
+
+    pattern.variables = file.variables.clone();
+    pattern.arrays = file.arrays.clone();
+    pattern.patterns = file.patterns.clone();
+
     metafile_to_string(&pattern, dirs, Some(key))
 }
 
@@ -83,7 +107,6 @@ fn expand_arrays(output: String, file: &MetaFile, name: Option<&str>) -> Result<
             } else {
                 key = array.to_string();
             }
-            // let key = dbg!(name.unwrap_or_default().to_owned() + "." + array);
             let value = file.get_arr(&key).unwrap_or_default();
             (*array, value)
         })
