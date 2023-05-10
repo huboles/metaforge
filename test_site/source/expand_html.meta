@@ -1,0 +1,19 @@
+${
+    var = 'GOOD'
+}
+
+@{
+    test.arr = ["GOOD", 'GOOD GOOD']
+}
+
+&{
+    test = 'array'
+}
+
+## This is a test
+
+<p>Inline html</p>
+
+variable: ${var}
+
+pattern: &{test}

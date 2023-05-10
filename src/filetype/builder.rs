@@ -8,14 +8,13 @@ use std::{
 };
 
 pub fn build_metafile(path: &Path, dirs: &RootDirs) -> Result<()> {
-    eprintln!("{:?}", path);
     let file = fs::read_to_string(path)?;
     let file = parse_file(&file)?;
 
+    let html = get_source_html(&file, dirs)?;
+
     let pattern = get_pattern("base", &file, dirs)?;
     let mut base = parse_file(&pattern)?;
-
-    let html = get_source_html(&file, dirs)?;
 
     base.variables = file.variables;
     base.arrays = file.arrays;
@@ -25,7 +24,8 @@ pub fn build_metafile(path: &Path, dirs: &RootDirs) -> Result<()> {
 
     let output = metafile_to_string(&base, dirs, Some("base"))?;
 
-    fs::write(find_dest(path, dirs)?, output)?;
+    // want newline to end file
+    fs::write(find_dest(path, dirs)?, output + "\n")?;
     Ok(())
 }
 
@@ -93,7 +93,20 @@ fn get_pattern(key: &str, file: &MetaFile, dirs: &RootDirs) -> Result<String> {
         return Ok(source.to_string());
     }
 
+    // anything not defined should have a default.meta file to fall back to
     let mut filename = file.get_pat(key).unwrap_or("default");
+
+    // if we're building from base pattern we need to wait on
+    // parsing/expansion so we can build and convert source to html
+    // we just want to return the string right now
+    if key == "base" {
+        let pattern_path = key.to_string() + "/" + filename;
+        let mut path = dirs.pattern.join(pattern_path);
+        path.set_extension("meta");
+
+        return Ok(fs::read_to_string(path.to_str().unwrap_or_default())?);
+    }
+
     // BLANK returns nothing, so no more processing needs to be done
     if filename == "BLANK" {
         return Ok(String::new());
@@ -119,12 +132,16 @@ fn get_pattern(key: &str, file: &MetaFile, dirs: &RootDirs) -> Result<String> {
 }
 
 fn find_dest(path: &Path, dirs: &RootDirs) -> Result<PathBuf> {
-    let path = path.to_string_lossy().to_string().replace(
-        dirs.source.to_str().unwrap_or_default(),
-        dirs.build.to_str().unwrap_or_default(),
-    );
+    let source = dirs.source.to_string_lossy().to_string();
+    let build = dirs.build.to_string_lossy().to_string();
 
-    Ok(PathBuf::from(path).canonicalize()?)
+    let path = path.canonicalize()?.to_string_lossy().to_string();
+    let path = path.replace(&source, &build);
+    let mut path = PathBuf::from(path);
+
+    path.set_extension("html");
+
+    Ok(path)
 }
 
 fn expand_arrays(output: String, file: &MetaFile, name: Option<&str>) -> Result<String> {
@@ -142,12 +159,13 @@ fn expand_arrays(output: String, file: &MetaFile, name: Option<&str>) -> Result<
         // make a hash map of [keys in source] -> [defined arrays]
         .map(|array| {
             let key: String;
+            // concat array to pattern name to get key in HashMap
             if let Some(name) = name {
                 key = name.to_owned() + "." + array;
             } else {
+                // keys for arrays in this file don't have a preceding pattern
                 key = array.to_string();
             }
-            // let key = dbg!(name.unwrap_or_default().to_owned() + "." + array);
             let value = file.get_arr(&key).unwrap_or_default();
             (*array, value)
         })

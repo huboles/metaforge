@@ -23,6 +23,7 @@ pub enum Substitution<'a> {
 
 #[derive(Debug, Clone, Default)]
 pub struct RootDirs {
+    pub root: PathBuf,
     pub source: PathBuf,
     pub build: PathBuf,
     pub pattern: PathBuf,
@@ -31,6 +32,7 @@ pub struct RootDirs {
 impl RootDirs {
     pub fn new() -> Self {
         Self {
+            root: PathBuf::new(),
             source: PathBuf::new(),
             build: PathBuf::new(),
             pattern: PathBuf::new(),
