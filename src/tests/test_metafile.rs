@@ -60,7 +60,6 @@ fn parse_meta_file() -> Result<()> {
     Ok(())
 }
 
-#[ignore = "Need to rewrite pattern test file"]
 #[test]
 fn parse_pattern_file() -> Result<()> {
     let mut pattern_src = parse_file(PATTERN)?.source.into_iter();

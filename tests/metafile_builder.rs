@@ -7,10 +7,9 @@ static PRE_EXPAND: &str = include_str!("../test_site/source/expand.meta");
 static POST_EXPAND: &str = include_str!("files/expanded");
 
 #[test]
-#[ignore = "don't want to interfere with builder right now"]
 fn test_metafile_to_str() -> Result<()> {
     let metafile = parse_file(PRE_EXPAND)?;
-    let dirs = build_rootdir()?;
+    let dirs = build_options()?;
 
     let file = metafile_to_string(&metafile, &dirs, None)?;
 
@@ -22,10 +21,10 @@ fn test_metafile_to_str() -> Result<()> {
 
 #[test]
 fn test_metafile_builder() -> Result<()> {
-    let dirs = build_rootdir()?;
+    let dirs = build_options()?;
     let path = PathBuf::from("test_site/source/expand_html.meta");
     build_metafile(&path, &dirs)?;
-    let source = fs::read_to_string("test_site/site/expand_html.html")?;
+    let source = fs::read_to_string("test_site/build/expand_html.html")?;
     let html = fs::read_to_string("tests/files/expanded_html")?;
 
     assert_eq!(source, html);
@@ -33,20 +32,23 @@ fn test_metafile_builder() -> Result<()> {
     Ok(())
 }
 
-fn build_rootdir() -> Result<RootDirs> {
+fn build_options() -> Result<Options> {
     let dir = PathBuf::from("./test_site").canonicalize()?;
 
-    let dirs = RootDirs {
+    let opts = Options {
         root: dir.clone(),
         source: dir.join("source"),
-        build: dir.join("site"),
+        build: dir.join("build"),
         pattern: dir.join("pattern"),
+        verbose: false,
+        quiet: false,
+        force: false,
+        undefined: false,
     };
 
-    if dirs.build.exists() {
-        fs::remove_dir_all(&dirs.build)?;
+    if !opts.build.exists() {
+        fs::create_dir(&opts.build)?;
     }
-    fs::create_dir(&dirs.build)?;
 
-    Ok(dirs)
+    Ok(opts)
 }

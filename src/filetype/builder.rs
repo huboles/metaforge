@@ -1,4 +1,4 @@
-use crate::{parse_file, MetaFile, RootDirs, Source, Substitution};
+use crate::{parse_file, MetaFile, Options, Source, Substitution};
 use color_eyre::{eyre::bail, Result};
 use pandoc::{InputFormat, InputKind, OutputFormat, OutputKind, Pandoc, PandocOutput};
 use std::{
@@ -7,7 +7,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub fn build_metafile(path: &Path, dirs: &RootDirs) -> Result<()> {
+pub fn build_metafile(path: &Path, dirs: &Options) -> Result<()> {
     let file = fs::read_to_string(path)?;
     let file = parse_file(&file)?;
 
@@ -29,7 +29,7 @@ pub fn build_metafile(path: &Path, dirs: &RootDirs) -> Result<()> {
     Ok(())
 }
 
-pub fn metafile_to_string(file: &MetaFile, dirs: &RootDirs, name: Option<&str>) -> Result<String> {
+pub fn metafile_to_string(file: &MetaFile, dirs: &Options, name: Option<&str>) -> Result<String> {
     let mut output = String::default();
     let mut arrays = false;
 
@@ -68,7 +68,7 @@ pub fn metafile_to_string(file: &MetaFile, dirs: &RootDirs, name: Option<&str>) 
     }
 }
 
-fn get_source_html(file: &MetaFile, dirs: &RootDirs) -> Result<String> {
+fn get_source_html(file: &MetaFile, dirs: &Options) -> Result<String> {
     let file = metafile_to_string(file, dirs, Some("SOURCE"))?;
     let mut pandoc = Pandoc::new();
 
@@ -85,7 +85,7 @@ fn get_source_html(file: &MetaFile, dirs: &RootDirs) -> Result<String> {
     }
 }
 
-fn get_pattern(key: &str, file: &MetaFile, dirs: &RootDirs) -> Result<String> {
+fn get_pattern(key: &str, file: &MetaFile, dirs: &Options) -> Result<String> {
     // SOURCE is already expanded in the initial build_metafile() call
     // we just need to return that
     if key == "SOURCE" {
@@ -131,7 +131,7 @@ fn get_pattern(key: &str, file: &MetaFile, dirs: &RootDirs) -> Result<String> {
     metafile_to_string(&pattern, dirs, Some(key))
 }
 
-fn find_dest(path: &Path, dirs: &RootDirs) -> Result<PathBuf> {
+fn find_dest(path: &Path, dirs: &Options) -> Result<PathBuf> {
     let source = dirs.source.to_string_lossy().to_string();
     let build = dirs.build.to_string_lossy().to_string();
 

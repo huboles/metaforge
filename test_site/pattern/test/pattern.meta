@@ -1,1 +1,7 @@
-GOOD
+<h1>This is a test</h1>
+<p>${variable}</p>
+<ul>
+    @{array}
+</ul
+&{pattern}
+<footer>Other stuff</footer>

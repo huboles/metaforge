@@ -4,6 +4,7 @@ version = "0.1.1"
 edition = "2021"
 
 [dependencies]
+clap = { version = "4", features = ["derive"] }
 pandoc = "0.8"
 color-eyre =  { version = "0.5", default-features = false }
 walkdir = "2"
