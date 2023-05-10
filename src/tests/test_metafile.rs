@@ -2,7 +2,7 @@ use crate::{parse_file, source, Source, Substitution};
 use color_eyre::Result;
 use pretty_assertions::assert_eq;
 
-static SOURCE: &str = include_str!("../../test_site/source/test_source.meta");
+static SOURCE: &str = include_str!("../../tests/files/test_source.meta");
 static PATTERN: &str = include_str!("../../test_site/pattern/test/pattern.meta");
 
 #[test]
