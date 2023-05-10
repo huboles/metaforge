@@ -131,6 +131,7 @@ fn get_pattern(key: &str, file: &MetaFile, dirs: &Options) -> Result<String> {
         return Ok(String::new());
     };
 
+    // DEFAULT override for variables defined higher in chain
     if filename == "DEFAULT" {
         filename = "default";
     }

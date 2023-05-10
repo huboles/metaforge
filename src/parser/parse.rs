@@ -1,5 +1,5 @@
 use crate::{source, MetaFile, Source, Substitution};
-use color_eyre::Result;
+use color_eyre::{eyre::WrapErr, Result};
 use pest::{
     iterators::{Pair, Pairs},
     Parser,
@@ -11,7 +11,10 @@ use std::collections::HashMap;
 pub struct MetaParser;
 
 pub fn parse_file(file: &str) -> Result<MetaFile> {
-    let meta_source = MetaParser::parse(Rule::file, file)?.next().unwrap();
+    let meta_source = MetaParser::parse(Rule::file, file)
+        .wrap_err("parser error")?
+        .next()
+        .unwrap();
 
     Ok(parse_pair(meta_source))
 }
