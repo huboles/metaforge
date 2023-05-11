@@ -26,20 +26,18 @@ pub fn build_site(opts: &Options) -> Result<()> {
                 std::fs::create_dir(path).ok()?;
                 // don't need them for any further operations so we filter them out
                 None
+            } else if let Ok(file) = file {
+                log!(opts, format!("\tadding file: {}", file.path().display()), 3);
+                Some(file.into_path())
             } else {
-                if let Ok(file) = file {
-                    log!(opts, format!("\tadding file: {}", file.path().display()), 3);
-                    Some(file.into_path())
-                } else {
-                    None
-                }
+                None
             }
         })
         .collect();
 
     log!(opts, "building files", 2);
     for file in files.iter() {
-        match build_metafile(file, &opts) {
+        match build_metafile(file, opts) {
             Ok(_) => continue,
             Err(e) => {
                 if opts.force {
@@ -202,6 +200,7 @@ fn get_pattern(key: &str, file: &MetaFile, opts: &Options) -> Result<String> {
         parse_file(pattern).wrap_err_with(|| eyre!("could not parse: {}\n", path.display()))?;
 
     // copy over maps for expanding contained variables
+    // TODO: Make this a merge so patterns can define/override their own variables
     pattern.variables = file.variables.clone();
     pattern.arrays = file.arrays.clone();
     pattern.patterns = file.patterns.clone();
@@ -219,7 +218,7 @@ fn find_dest(path: &Path, opts: &Options) -> Result<PathBuf> {
         .canonicalize()
         .wrap_err_with(|| eyre!("could not get absolute path: {}\n", path.display()))?;
     let path = path.to_string_lossy();
-    let path = path.replace(&*source, &*build);
+    let path = path.replace(&*source, &build);
     let mut path = PathBuf::from(path);
 
     path.set_extension("html");
