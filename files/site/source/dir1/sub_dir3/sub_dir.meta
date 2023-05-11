@@ -1,0 +1,11 @@
+${
+    list_name = "A BIG LIST"
+}
+
+@{
+    list.item.items = ['item1','item2','item3','item4']
+}
+
+# HEADER LIST
+
+This should have a list in the header

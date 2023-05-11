@@ -1,0 +1,6 @@
+${ var = 'GOOD' }
+&{ base = 'text' }
+
+# SIMPLE SUBSTITUTION
+
+variable: ${var}

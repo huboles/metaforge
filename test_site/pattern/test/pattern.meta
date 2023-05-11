@@ -1,7 +1,0 @@
-<h1>This is a test</h1>
-<p>${variable}</p>
-<ul>
-    @{array}
-</ul
-&{test.blank}
-<footer>Other stuff</footer>

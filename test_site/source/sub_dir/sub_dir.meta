@@ -1,5 +1,0 @@
-${
-    var = 'variable'
-}
-
-This is a simple filler file with a single variable: ${var}

@@ -1,0 +1,14 @@
+@{
+    link.url = [ 'a.com', 'b.net', 'c.org']
+    link.title = [ 'A Website', 'B Place', 'C Dest' ]
+}
+
+&{
+    link = 'bold'
+}
+
+# LINKS
+
+This should create a group of bold links
+
+&{link}

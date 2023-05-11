@@ -1,0 +1,8 @@
+&{
+    header = BLANK
+    footer = BLANK
+}
+
+# BLANK
+
+This should have no header or footer

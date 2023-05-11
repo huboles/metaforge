@@ -27,12 +27,15 @@ pub struct Opts {
     /// Minimal output
     #[arg(short, long, default_value_t = false)]
     quiet: bool,
-    /// Don't stop if a single file fails [false]
+    /// Don't stop on file failure [FALSE]
     #[arg(long, default_value_t = false)]
     force: bool,
-    /// Stop on undefined variables, patterns, and arrays [false]
+    /// Stop on undefined variables, patterns, and arrays [FALSE]
     #[arg(long, default_value_t = false)]
     undefined: bool,
+    /// Clean build directory before building site [FALSE]
+    #[arg(long, default_value_t = false)]
+    clean: bool,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -45,6 +48,7 @@ pub struct Options {
     pub quiet: bool,
     pub force: bool,
     pub undefined: bool,
+    pub clean: bool,
 }
 
 impl Options {
@@ -58,6 +62,7 @@ impl Options {
             quiet: false,
             force: false,
             undefined: false,
+            clean: false,
         }
     }
 }
@@ -65,7 +70,7 @@ impl Options {
 #[macro_export]
 macro_rules! log {
     ($opts:ident, $string:expr, $level:expr) => {
-        if $opts.verbose >= $level {
+        if $opts.verbose >= $level && !$opts.quiet {
             println!("{}", $string);
         }
     };
@@ -79,6 +84,7 @@ pub fn parse_opts() -> Result<Options> {
     options.quiet = opts.quiet;
     options.force = opts.force;
     options.undefined = opts.undefined;
+    options.clean = opts.clean;
 
     if let Some(root) = opts.root.as_deref() {
         options.root = PathBuf::from(root).canonicalize()?;
