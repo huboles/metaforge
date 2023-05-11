@@ -1,0 +1,14 @@
+${
+    variable = 'GOOD'
+}
+
+@{
+    test.pattern.array = ["GOOD"]
+}
+
+&{
+    test = 'pattern'
+    test.blank = BLANK
+}
+
+&{test}

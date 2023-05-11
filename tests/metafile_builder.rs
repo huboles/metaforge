@@ -40,7 +40,7 @@ fn build_options() -> Result<Options> {
         source: dir.join("source"),
         build: dir.join("build"),
         pattern: dir.join("pattern"),
-        verbose: false,
+        verbose: 0,
         quiet: false,
         force: false,
         undefined: false,

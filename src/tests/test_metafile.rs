@@ -69,7 +69,7 @@ fn parse_pattern_file() -> Result<()> {
     pattern_src.next();
     assert_eq!(pattern_src.next().unwrap(), source!(arr("array")));
     pattern_src.next();
-    assert_eq!(pattern_src.next().unwrap(), source!(pat("pattern")));
+    assert_eq!(pattern_src.next().unwrap(), source!(pat("test.blank")));
     pattern_src.next();
     assert_eq!(pattern_src.next(), None);
 

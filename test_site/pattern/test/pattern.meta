@@ -3,5 +3,5 @@
 <ul>
     @{array}
 </ul
-&{pattern}
+&{test.blank}
 <footer>Other stuff</footer>

@@ -20,10 +20,11 @@ pub struct Opts {
     /// Pattern directory [CURRENT_DIR/pattern]
     #[arg(short, long, value_name = "PATTERN_DIR")]
     pattern: Option<String>,
-    /// Extra output [false]
-    #[arg(short, long, default_value_t = false)]
-    verbose: bool,
-    /// Minimal output [false]
+    /// Enable extra output.
+    /// Repeated flags give more info
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
+    /// Minimal output
     #[arg(short, long, default_value_t = false)]
     quiet: bool,
     /// Don't stop if a single file fails [false]
@@ -40,7 +41,7 @@ pub struct Options {
     pub source: PathBuf,
     pub build: PathBuf,
     pub pattern: PathBuf,
-    pub verbose: bool,
+    pub verbose: u8,
     pub quiet: bool,
     pub force: bool,
     pub undefined: bool,
@@ -53,12 +54,21 @@ impl Options {
             source: PathBuf::new(),
             build: PathBuf::new(),
             pattern: PathBuf::new(),
-            verbose: false,
+            verbose: 0,
             quiet: false,
             force: false,
             undefined: false,
         }
     }
+}
+
+#[macro_export]
+macro_rules! log {
+    ($opts:ident, $string:expr, $level:expr) => {
+        if $opts.verbose >= $level {
+            println!("{}", $string);
+        }
+    };
 }
 
 pub fn parse_opts() -> Result<Options> {

@@ -1,4 +1,4 @@
-use crate::{parse_file, MetaFile, Options, Source, Substitution};
+use crate::{log, parse_file, MetaFile, Options, Source, Substitution};
 use color_eyre::{
     eyre::bail,
     eyre::{eyre, WrapErr},
@@ -11,16 +11,19 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub fn build_metafile(path: &Path, dirs: &Options) -> Result<()> {
-    let file = fs::read_to_string(path)
-        .wrap_err_with(|| eyre!("failed to read: {}\n", path.to_string_lossy()))?;
-    let file = parse_file(&file)
-        .wrap_err_with(|| eyre!("failed to parse: {}\n", path.to_string_lossy()))?;
+pub fn build_metafile(path: &Path, opts: &Options) -> Result<()> {
+    log!(opts, format!("\t{}", path.display()), 1);
+    let file =
+        fs::read_to_string(path).wrap_err_with(|| eyre!("failed to read: {}\n", path.display()))?;
 
-    let html = get_source_html(&file, dirs)
-        .wrap_err_with(|| eyre!("failed converting to html: {}\n", path.to_string_lossy()))?;
+    log!(opts, "\tparsing", 2);
+    let file =
+        parse_file(&file).wrap_err_with(|| eyre!("failed to parse: {}\n", path.display()))?;
 
-    let pattern = get_pattern("base", &file, dirs).wrap_err("failed to get base pattern\n")?;
+    let html = get_source_html(&file, opts)
+        .wrap_err_with(|| eyre!("failed converting to html: {}\n", path.display()))?;
+
+    let pattern = get_pattern("base", &file, opts).wrap_err("failed to get base pattern\n")?;
     let mut base = parse_file(&pattern).wrap_err("failed to parse base pattern\n")?;
 
     base.variables = file.variables;
@@ -29,23 +32,20 @@ pub fn build_metafile(path: &Path, dirs: &Options) -> Result<()> {
 
     base.patterns.insert("SOURCE", &html);
 
-    let output = metafile_to_string(&base, dirs, Some("base"))
-        .wrap_err_with(|| eyre!("failed to build: {}\n", path.to_string_lossy()))?;
+    let output = metafile_to_string(&base, opts, Some("base"))
+        .wrap_err_with(|| eyre!("failed to build: {}\n", path.display()))?;
 
-    let dest = find_dest(path, dirs).wrap_err_with(|| {
-        format!(
-            "could not find destination file: {}\n",
-            path.to_string_lossy()
-        )
-    })?;
+    log!(opts, "\twriting", 2);
+    let dest = find_dest(path, opts)
+        .wrap_err_with(|| format!("could not find destination file: {}\n", path.display()))?;
 
     // want newline to end file
     fs::write(&dest, output + "\n")
-        .wrap_err_with(|| eyre!("could not write to: {}\n", dest.to_string_lossy()))?;
+        .wrap_err_with(|| eyre!("could not write to: {}\n", dest.display()))?;
     Ok(())
 }
 
-pub fn metafile_to_string(file: &MetaFile, dirs: &Options, name: Option<&str>) -> Result<String> {
+pub fn metafile_to_string(file: &MetaFile, opts: &Options, name: Option<&str>) -> Result<String> {
     let mut output = String::default();
     let mut arrays = false;
 
@@ -64,7 +64,7 @@ pub fn metafile_to_string(file: &MetaFile, dirs: &Options, name: Option<&str>) -
                         .filter(|val| *val != "BLANK" && *val != "DEFAULT")
                         .map(|val| val.to_string())
                         .unwrap_or_default(),
-                    Substitution::Pattern(key) => get_pattern(key, file, dirs)
+                    Substitution::Pattern(key) => get_pattern(key, file, opts)
                         .wrap_err_with(|| eyre!("could not find pattern for: {}\n", key))?,
                     // comments have already been removed at this point,
                     // so we use them to mark keys for array substitution
@@ -79,22 +79,26 @@ pub fn metafile_to_string(file: &MetaFile, dirs: &Options, name: Option<&str>) -
     }
 
     if arrays {
+        log!(opts, "\t\t\texpanding arrays", 4);
         expand_arrays(output, file, name)
     } else {
         Ok(output)
     }
 }
 
-fn get_source_html(file: &MetaFile, dirs: &Options) -> Result<String> {
-    let file = metafile_to_string(file, dirs, Some("SOURCE")).wrap_err("failed building source")?;
+fn get_source_html(file: &MetaFile, opts: &Options) -> Result<String> {
+    log!(opts, "\tbuilding source", 2);
+    let file = metafile_to_string(file, opts, Some("SOURCE")).wrap_err("failed building source")?;
     let mut pandoc = Pandoc::new();
 
+    log!(opts, "\t\tsetting up pandoc", 3);
     pandoc
         .set_input(InputKind::Pipe(file))
         .set_output(OutputKind::Pipe)
         .set_input_format(InputFormat::Markdown, vec![])
         .set_output_format(OutputFormat::Html, vec![]);
 
+    log!(opts, "\t\texecuting pandoc command", 3);
     if let Ok(PandocOutput::ToBuffer(html)) = pandoc.execute() {
         Ok(html)
     } else {
@@ -102,14 +106,16 @@ fn get_source_html(file: &MetaFile, dirs: &Options) -> Result<String> {
     }
 }
 
-fn get_pattern(key: &str, file: &MetaFile, dirs: &Options) -> Result<String> {
+fn get_pattern(key: &str, file: &MetaFile, opts: &Options) -> Result<String> {
     // SOURCE is already expanded in the initial build_metafile() call
     // we just need to return that
     if key == "SOURCE" {
+        log!(opts, "\t\t\treturning SOURCE", 4);
         let source = file.patterns.get("SOURCE").unwrap_or(&"");
         return Ok(source.to_string());
     }
 
+    log!(opts, format!("\t\tpattern: {}", key), 3);
     // anything not defined should have a default.meta file to fall back to
     let mut filename = file.get_pat(key).unwrap_or("default");
 
@@ -117,49 +123,56 @@ fn get_pattern(key: &str, file: &MetaFile, dirs: &Options) -> Result<String> {
     // parsing/expansion so we can build and convert source to html
     // we just want to return the string right now
     if key == "base" {
+        log!(opts, "\t\t\treturning base", 4);
         let pattern_path = key.to_string() + "/" + filename;
-        let mut path = dirs.pattern.join(pattern_path);
+        let mut path = opts.pattern.join(pattern_path);
         path.set_extension("meta");
 
         let base = fs::read_to_string(&path)
-            .wrap_err_with(|| eyre!("could not read: {}\n", path.to_string_lossy()))?;
+            .wrap_err_with(|| eyre!("could not read: {}\n", path.display()))?;
         return Ok(base);
     }
 
     // BLANK returns nothing, so no more processing needs to be done
     if filename == "BLANK" {
+        log!(opts, format!("\t\t\treturning blank: {}", key), 4);
         return Ok(String::new());
     };
 
     // DEFAULT override for variables defined higher in chain
     if filename == "DEFAULT" {
+        log!(opts, "\t\t\tdefault pattern", 4);
         filename = "default";
     }
 
+    log!(opts, "\t\t\tbuilding path from key", 4);
     let pattern_path = key.replace('.', "/") + "/" + filename;
-    let mut path = dirs.pattern.join(pattern_path);
+    let mut path = opts.pattern.join(pattern_path);
     path.set_extension("meta");
 
+    log!(opts, "\t\t\tparsing file", 4);
     let pattern = &fs::read_to_string(&path)
-        .wrap_err_with(|| eyre!("could not read: {}\n", path.to_string_lossy()))?;
-    let mut pattern = parse_file(pattern)
-        .wrap_err_with(|| eyre!("could not parse: {}\n", path.to_string_lossy()))?;
+        .wrap_err_with(|| eyre!("could not read: {}\n", path.display()))?;
+    let mut pattern =
+        parse_file(pattern).wrap_err_with(|| eyre!("could not parse: {}\n", path.display()))?;
 
     // copy over maps for expanding contained variables
     pattern.variables = file.variables.clone();
     pattern.arrays = file.arrays.clone();
     pattern.patterns = file.patterns.clone();
 
-    metafile_to_string(&pattern, dirs, Some(key))
+    log!(opts, "\t\t\tbuilding pattern", 4);
+    metafile_to_string(&pattern, opts, Some(key))
 }
 
-fn find_dest(path: &Path, dirs: &Options) -> Result<PathBuf> {
-    let source = dirs.source.to_string_lossy();
-    let build = dirs.build.to_string_lossy();
+fn find_dest(path: &Path, opts: &Options) -> Result<PathBuf> {
+    log!(opts, "\t\tfinding destination", 3);
+    let source = opts.source.to_string_lossy();
+    let build = opts.build.to_string_lossy();
 
     let path = path
         .canonicalize()
-        .wrap_err_with(|| eyre!("could not get absolute path: {}\n", path.to_string_lossy()))?;
+        .wrap_err_with(|| eyre!("could not get absolute path: {}\n", path.display()))?;
     let path = path.to_string_lossy();
     let path = path.replace(&*source, &*build);
     let mut path = PathBuf::from(path);
