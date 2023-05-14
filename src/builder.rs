@@ -10,10 +10,10 @@ use std::{
 pub fn build_metafile(file: &MetaFile) -> Result<String> {
     let html = get_source_html(file, file.opts)?;
 
-    let pattern = get_pattern("base", &file)?;
+    let pattern = get_pattern("base", file)?;
     let mut base = parse_file(pattern, file.opts)?;
 
-    base.merge(&file);
+    base.merge(file);
     base.patterns.insert("SOURCE".to_string(), html);
 
     let output = metafile_to_string(&base)?;
@@ -24,7 +24,7 @@ pub fn build_metafile(file: &MetaFile) -> Result<String> {
 pub fn write_file(path: &Path, html: String, opts: &Options) -> Result<()> {
     let dest = find_dest(path, opts)?;
     // want newline to end file
-    fs::write(&dest, html + "\n")?;
+    fs::write(dest, html + "\n")?;
     Ok(())
 }
 
@@ -135,21 +135,19 @@ fn get_pattern(key: &str, file: &MetaFile) -> Result<String> {
     let mut pattern = MetaFile::build(path, file.opts)?;
 
     // copy over maps for expanding contained variables
-    pattern.merge(&file);
+    pattern.merge(file);
 
     metafile_to_string(&pattern)
 }
 
-fn get_variable(key: &str, file: &MetaFile) -> Result<String> {
+fn get_variable(_key: &str, _file: &MetaFile) -> Result<String> {
     todo!()
 }
 
 fn find_dest(path: &Path, opts: &Options) -> Result<PathBuf> {
     let path = path.canonicalize()?;
 
-    let path = opts.build.join(path.strip_prefix(&opts.source)?);
-    let mut path = PathBuf::from(path);
-
+    let mut path = opts.build.join(path.strip_prefix(&opts.source)?);
     path.set_extension("html");
 
     Ok(path)
@@ -169,7 +167,6 @@ fn expand_arrays(input: String, file: &MetaFile) -> Result<String> {
         })
         // make a hash map of [keys in source] -> [defined arrays]
         .map(|key| {
-            let y: String;
             // concat array to pattern name to get key in HashMap
             let name = file.name().unwrap();
             let long_key = name + "." + key;

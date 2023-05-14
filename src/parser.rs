@@ -10,7 +10,7 @@ use std::collections::HashMap;
 #[grammar = "meta.pest"]
 pub struct MetaParser;
 
-pub fn parse_file<'a>(file: String, opts: &'a Options) -> Result<MetaFile<'a>> {
+pub fn parse_file(file: String, opts: &Options) -> Result<MetaFile> {
     let meta_source = MetaParser::parse(Rule::file, &file)
         .wrap_err("parser error")?
         .next()
@@ -225,5 +225,11 @@ mod tests {
     #[should_panic]
     fn map_source_map() {
         test_str!(r#"${var='v'} Some text @{array = ['a']}"#);
+    }
+
+    #[test]
+    #[should_panic]
+    fn header_not_first() {
+        test_str!(r#"${v='v'} #{ type = 'html'} @{a=['a']}"#);
     }
 }

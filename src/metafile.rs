@@ -18,7 +18,7 @@ impl<'a> MetaFile<'a> {
     pub fn build(path: PathBuf, opts: &'a Options) -> Result<Self> {
         let str = fs::read_to_string(&path)?;
         let mut metafile = parse_file(str, opts)?;
-        metafile.path = path.to_path_buf();
+        metafile.path = path;
         metafile.opts = opts;
         Ok(metafile)
     }
@@ -37,12 +37,19 @@ impl<'a> MetaFile<'a> {
 
     pub fn name(&self) -> Result<String> {
         if self.path.starts_with(&self.opts.source) {
+            // in source dir, we want the file name
             let name = self.path.strip_prefix(&self.opts.source)?;
             let name = name.to_string_lossy().to_string().replace('/', ".");
             Ok(name)
         } else {
+            // in pattern dir, we want the parent dir
             let name = self.path.strip_prefix(&self.opts.pattern)?;
-            let name = name.to_string_lossy().to_string().replace('/', ".");
+            let name = name
+                .parent()
+                .unwrap()
+                .to_string_lossy()
+                .to_string()
+                .replace('/', ".");
             Ok(name)
         }
     }
@@ -121,7 +128,7 @@ impl<'a> DirNode<'a> {
         let global = MetaFile::new(opts);
 
         Ok(Self {
-            path: path.to_path_buf(),
+            path,
             opts,
             global,
             files,
@@ -132,7 +139,7 @@ impl<'a> DirNode<'a> {
     // parses all contained files and directories and pushes
     // parsed structures into the files and directories vectors
     pub fn map(&mut self, global: &'a MetaFile) -> Result<()> {
-        for f in fs::read_dir(&self.path)?.into_iter() {
+        for f in fs::read_dir(&self.path)? {
             let file = f?.path();
 
             if file.is_dir() {
