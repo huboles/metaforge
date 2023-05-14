@@ -1,2 +1,2 @@
-# ROOT
-This is to test that the default base works without any defintions.
+&{ base = 'text' }
+TEST

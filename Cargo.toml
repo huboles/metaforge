@@ -15,5 +15,9 @@ pretty_assertions = "1"
 criterion = "0.4"
 
 [[bench]]
-name = "build_site"
+name = "build_metafile"
+harness = false
+
+[[bench]]
+name = "map_dir"
 harness = false

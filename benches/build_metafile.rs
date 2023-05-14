@@ -16,13 +16,16 @@ pub fn build_file_benchmark(c: &mut Criterion) {
 
     c.bench_function("build benchmark file", |b| {
         b.iter(|| {
-            let string = std::fs::read_to_string(black_box(&source)).unwrap();
-            let file = metaforge::parse_file(string, black_box(&opts)).unwrap();
-            let mut path = opts
-                .build
-                .join(source.strip_prefix(black_box(&opts.source)).unwrap());
+            let string = std::fs::read_to_string(black_box(&source)).expect("read file");
+            let file = metaforge::parse_file(string, black_box(&opts)).expect("parse file");
+            let mut path = opts.build.join(
+                source
+                    .strip_prefix(black_box(&opts.source))
+                    .expect("strip path"),
+            );
             path.set_extension("html");
-            std::fs::write(path, metaforge::build_metafile(&file).unwrap()).unwrap();
+            std::fs::write(path, metaforge::build_metafile(&file).expect("build file"))
+                .expect("write file");
         })
     });
 }

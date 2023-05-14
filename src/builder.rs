@@ -248,15 +248,11 @@ mod tests {
     }
 
     #[test]
-    fn test_build_metafile() -> Result<()> {
+    fn test_metafile_to_string() -> Result<()> {
         let opts = build_options()?;
         let path = opts.source.join("dir1/sub_dir1/deep2/deep.meta");
-        let expanded = "<html>\n<body>\nGOOD\n</body>\n</html>\n";
-        build_metafile(&MetaFile::build(path, &opts)?)?;
-        assert_eq!(
-            std::fs::read_to_string(opts.build.join("dir1/sub_dir1/deep2/deep.html"))?,
-            expanded
-        );
+        let expanded = "<html><body>GOOD</body></html>";
+        assert_eq!(build_metafile(&MetaFile::build(path, &opts)?)?, expanded);
         Ok(())
     }
 
