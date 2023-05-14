@@ -1,4 +1,4 @@
-use crate::{build_metafile, parse_file, Options};
+use crate::{build_metafile, parse_file, write_file, Options};
 use color_eyre::{eyre::eyre, Result};
 use std::collections::HashMap;
 use std::{fs, path::PathBuf};
@@ -108,6 +108,7 @@ pub enum Sub {
     Pat(String),
 }
 
+#[derive(Debug, Clone)]
 pub struct DirNode<'a> {
     path: PathBuf,
     opts: &'a Options,
@@ -163,23 +164,29 @@ impl<'a> DirNode<'a> {
     pub fn build_files(&mut self) -> Result<()> {
         for file in self.files.iter_mut() {
             file.merge(&self.global);
-            if let Err(e) = build_metafile(file) {
-                if self.opts.force {
-                    // print a line to stderr about failure but continue with other files
-                    eprintln!("ignoring {}: {}", file.path.display(), e);
-                    continue;
-                } else {
-                    return Err(e.wrap_err(eyre!("{}:", file.path.display())));
+            match build_metafile(file) {
+                Ok(str) => {
+                    write_file(&file.path, str, file.opts)?;
+                }
+                Err(e) => {
+                    if self.opts.force {
+                        // print a line to stderr about failure but continue with other files
+                        eprintln!("ignoring {}: {}", file.path.display(), e);
+                        continue;
+                    } else {
+                        return Err(e.wrap_err(eyre!("{}:", file.path.display())));
+                    }
                 }
             }
         }
         Ok(())
     }
 
-    pub fn build_dir(&mut self) -> Result<()> {
+    pub fn build_dir(&'a mut self) -> Result<()> {
         self.build_files()?;
 
         for dir in self.dirs.iter_mut() {
+            dir.map(&self.global)?;
             dir.build_dir()?;
         }
 

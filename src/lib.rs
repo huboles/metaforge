@@ -36,5 +36,5 @@ pub fn build_dir(opts: &Options) -> Result<()> {
 
     source.map(&global_init)?;
 
-    Ok(())
+    source.build_dir()
 }

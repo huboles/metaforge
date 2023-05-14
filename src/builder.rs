@@ -24,7 +24,7 @@ pub fn build_metafile(file: &MetaFile) -> Result<String> {
 pub fn write_file(path: &Path, html: String, opts: &Options) -> Result<()> {
     let dest = find_dest(path, opts)?;
     // want newline to end file
-    fs::write(dest, html + "\n")?;
+    fs::write(dest, html)?;
     Ok(())
 }
 
