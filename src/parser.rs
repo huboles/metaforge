@@ -72,7 +72,7 @@ fn parse_source(pairs: Pairs<Rule>) -> Vec<Src> {
             Rule::var_sub => vec.push(source!(var(parse_sub(pair)))),
             Rule::arr_sub => vec.push(source!(arr(parse_sub(pair)))),
             Rule::pat_sub => vec.push(source!(pat(parse_sub(pair)))),
-            Rule::char_seq => vec.push(source!(pair)),
+            Rule::char_seq => vec.push(source!(pair.as_str())),
             // anything that isn't a substitution is a char_seq inside source
             _ => unreachable!(),
         }

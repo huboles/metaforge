@@ -120,7 +120,7 @@ fn get_pattern(key: &str, file: &MetaFile) -> Result<String> {
 
     // BLANK returns nothing, so no more processing needs to be done
     if filename == "BLANK" {
-        return Ok(String::new());
+        return Ok(String::from(""));
     };
 
     // DEFAULT override for patterns defined higher in chain
@@ -140,8 +140,17 @@ fn get_pattern(key: &str, file: &MetaFile) -> Result<String> {
     metafile_to_string(&pattern)
 }
 
-fn get_variable(_key: &str, _file: &MetaFile) -> Result<String> {
-    todo!()
+fn get_variable(key: &str, file: &MetaFile) -> Result<String> {
+    let long_key = file.name()? + "." + key;
+    if let Some(val) = file.get_var(&long_key) {
+        Ok(val.clone())
+    } else if let Some(val) = file.get_var(key) {
+        Ok(val.clone())
+    } else if file.opts.undefined {
+        bail!("undefined variable: {}, {}", key, long_key)
+    } else {
+        Ok(String::new())
+    }
 }
 
 fn find_dest(path: &Path, opts: &Options) -> Result<PathBuf> {

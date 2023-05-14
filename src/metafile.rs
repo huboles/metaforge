@@ -19,7 +19,6 @@ impl<'a> MetaFile<'a> {
         let str = fs::read_to_string(&path)?;
         let mut metafile = parse_file(str, opts)?;
         metafile.path = path;
-        metafile.opts = opts;
         Ok(metafile)
     }
 
@@ -121,7 +120,10 @@ impl<'a> DirNode<'a> {
     pub fn build(path: PathBuf, opts: &'a Options) -> Result<Self> {
         assert!(path.is_dir() && path.exists());
 
-        fs::create_dir(opts.build.join(path.strip_prefix(&opts.source)?))?;
+        let build_dir = opts.build.join(path.strip_prefix(&opts.source)?);
+        if !build_dir.exists() {
+            fs::create_dir(build_dir)?;
+        }
 
         let files: Vec<MetaFile> = Vec::new();
         let dirs: Vec<DirNode> = Vec::new();
