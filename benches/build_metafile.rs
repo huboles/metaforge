@@ -18,13 +18,8 @@ pub fn build_file_benchmark(c: &mut Criterion) {
         b.iter(|| {
             let string = std::fs::read_to_string(black_box(&source)).expect("read file");
             let file = metaforge::parse_file(string, black_box(&opts)).expect("parse file");
-            let mut path = opts.build.join(
-                source
-                    .strip_prefix(black_box(&opts.source))
-                    .expect("strip path"),
-            );
-            path.set_extension("html");
-            std::fs::write(path, metaforge::build_metafile(&file).expect("build file"))
+            let string = metaforge::build_metafile(&file).expect("build file");
+            metaforge::write_file(black_box(&source), string, black_box(&opts))
                 .expect("write file");
         })
     });

@@ -36,20 +36,30 @@ impl<'a> MetaFile<'a> {
 
     pub fn name(&self) -> Result<String> {
         if self.path.starts_with(&self.opts.source) {
-            // in source dir, we want the file name
-            let name = self.path.strip_prefix(&self.opts.source)?;
-            let name = name.to_string_lossy().to_string().replace('/', ".");
+            // in source dir, we want the file name without the '.meta' extension
+            let name: String = self
+                .path
+                .strip_prefix(&self.opts.source)?
+                .components()
+                .map(|x| {
+                    x.as_os_str()
+                        .to_string_lossy()
+                        .to_string()
+                        .replace(".meta", "")
+                })
+                .collect::<Vec<String>>()
+                .join(".");
             Ok(name)
-        } else {
+        } else if self.path.starts_with(&self.opts.pattern) {
             // in pattern dir, we want the parent dir
             let name = self.path.strip_prefix(&self.opts.pattern)?;
             let name = name
                 .parent()
-                .unwrap()
-                .to_string_lossy()
-                .to_string()
-                .replace('/', ".");
+                .map(|s| s.to_string_lossy().to_string().replace('/', "."))
+                .unwrap_or_default();
             Ok(name)
+        } else {
+            color_eyre::eyre::bail!("could not get name from: {}", self.path.display());
         }
     }
 
@@ -189,6 +199,36 @@ impl<'a> DirNode<'a> {
             dir.map(&self.global)?;
             dir.build_dir()?;
         }
+
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_name() -> Result<()> {
+        let mut opts = Options::new();
+
+        opts.source = "/tmp/source".into();
+        opts.build = "/tmp/build".into();
+        opts.pattern = "/tmp/pattern".into();
+
+        let src_path = PathBuf::from("/tmp/source/test/file.meta");
+        let pat1_path = PathBuf::from("/tmp/pattern/base/test.meta");
+        let pat2_path = PathBuf::from("/tmp/pattern/test/class/file.meta");
+
+        let mut src = MetaFile::new(&opts);
+        src.path = src_path;
+        let mut pat1 = MetaFile::new(&opts);
+        pat1.path = pat1_path;
+        let mut pat2 = MetaFile::new(&opts);
+        pat2.path = pat2_path;
+
+        assert_eq!(src.name()?, "test.file");
+        assert_eq!(pat1.name()?, "base");
+        assert_eq!(pat2.name()?, "test.class");
 
         Ok(())
     }
