@@ -4,34 +4,46 @@ use std::collections::HashMap;
 use std::{fs, path::PathBuf};
 
 #[derive(Debug, Clone)]
-pub struct MetaFile {
+pub struct MetaFile<'a> {
+    pub opts: &'a Options,
     pub path: PathBuf,
+    pub header: HashMap<String, String>,
     pub variables: HashMap<String, String>,
     pub arrays: HashMap<String, Vec<String>>,
     pub patterns: HashMap<String, String>,
-    pub source: Vec<Source>,
+    pub source: Vec<Src>,
 }
 
-impl MetaFile {
-    pub fn build(path: PathBuf) -> Result<Self> {
+impl<'a> MetaFile<'a> {
+    pub fn build(path: PathBuf, opts: &'a Options) -> Result<Self> {
         let str = fs::read_to_string(&path)?;
-        let mut metafile = MetaFile::build_from_string(str)?;
+        let mut metafile = parse_file(str, opts)?;
         metafile.path = path.to_path_buf();
+        metafile.opts = opts;
         Ok(metafile)
     }
 
-    fn build_from_string(string: String) -> Result<Self> {
-        let metafile = parse_file(string)?;
-        Ok(metafile)
-    }
-
-    pub fn new() -> Self {
+    pub fn new(opts: &'a Options) -> Self {
         Self {
+            opts,
             path: PathBuf::new(),
+            header: HashMap::new(),
             variables: HashMap::new(),
             arrays: HashMap::new(),
             patterns: HashMap::new(),
             source: Vec::new(),
+        }
+    }
+
+    pub fn name(&self) -> Result<String> {
+        if self.path.starts_with(&self.opts.source) {
+            let name = self.path.strip_prefix(&self.opts.source)?;
+            let name = name.to_string_lossy().to_string().replace('/', ".");
+            Ok(name)
+        } else {
+            let name = self.path.strip_prefix(&self.opts.pattern)?;
+            let name = name.to_string_lossy().to_string().replace('/', ".");
+            Ok(name)
         }
     }
 
@@ -71,30 +83,30 @@ impl MetaFile {
 
 #[macro_export]
 macro_rules! source (
-    (var($s:expr)) => { Source::Sub(Substitution::Variable($s.to_string()))};
-    (arr($s:expr)) => { Source::Sub(Substitution::Array($s.to_string()))};
-    (pat($s:expr)) => { Source::Sub(Substitution::Pattern($s.to_string()))};
-    ($s:expr) => { Source::Str($s.to_string())};
+    (var($s:expr)) => { Src::Sub(Sub::Var($s.to_string()))};
+    (arr($s:expr)) => { Src::Sub(Sub::Arr($s.to_string()))};
+    (pat($s:expr)) => { Src::Sub(Sub::Pat($s.to_string()))};
+    ($s:expr) => { Src::Str($s.to_string())};
 );
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Source {
+pub enum Src {
     Str(String),
-    Sub(Substitution),
+    Sub(Sub),
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Substitution {
-    Variable(String),
-    Array(String),
-    Pattern(String),
+pub enum Sub {
+    Var(String),
+    Arr(String),
+    Pat(String),
 }
 
 pub struct DirNode<'a> {
     path: PathBuf,
     opts: &'a Options,
-    global: MetaFile,
-    files: Vec<MetaFile>,
+    global: MetaFile<'a>,
+    files: Vec<MetaFile<'a>>,
     dirs: Vec<DirNode<'a>>,
 }
 
@@ -106,7 +118,7 @@ impl<'a> DirNode<'a> {
 
         let files: Vec<MetaFile> = Vec::new();
         let dirs: Vec<DirNode> = Vec::new();
-        let global = MetaFile::new();
+        let global = MetaFile::new(opts);
 
         Ok(Self {
             path: path.to_path_buf(),
@@ -127,11 +139,11 @@ impl<'a> DirNode<'a> {
                 let dir = DirNode::build(file, self.opts)?;
                 self.dirs.push(dir);
             } else if file.file_name().and_then(|f| f.to_str()) == Some("default.meta") {
-                let mut new_global = MetaFile::build(file)?;
+                let mut new_global = MetaFile::build(file, self.opts)?;
                 new_global.merge(global);
                 self.global = new_global;
             } else if file.extension().and_then(|f| f.to_str()) == Some("meta") {
-                let file = MetaFile::build(file)?;
+                let file = MetaFile::build(file, self.opts)?;
                 self.files.push(file)
             }
         }
@@ -142,7 +154,7 @@ impl<'a> DirNode<'a> {
     pub fn build_files(&mut self) -> Result<()> {
         for file in self.files.iter_mut() {
             file.merge(&self.global);
-            if let Err(e) = build_metafile(file, self.opts) {
+            if let Err(e) = build_metafile(file) {
                 if self.opts.force {
                     // print a line to stderr about failure but continue with other files
                     eprintln!("ignoring {}: {}", file.path.display(), e);

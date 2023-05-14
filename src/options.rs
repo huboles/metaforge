@@ -114,7 +114,7 @@ impl TryFrom<Opts> for Options {
 
 #[macro_export]
 macro_rules! log {
-    ($opts:ident, $string:expr, $level:expr) => {
+    ($opts:expr, $string:expr, $level:expr) => {
         if $opts.verbose >= $level && !$opts.quiet {
             println!("{}", $string);
         }

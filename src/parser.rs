@@ -1,4 +1,4 @@
-use crate::{source, MetaFile, Source, Substitution};
+use crate::{source, MetaFile, Options, Src, Sub};
 use color_eyre::{eyre::WrapErr, Result};
 use pest::{
     iterators::{Pair, Pairs},
@@ -10,23 +10,24 @@ use std::collections::HashMap;
 #[grammar = "meta.pest"]
 pub struct MetaParser;
 
-pub fn parse_file<'a>(file: String) -> Result<MetaFile> {
+pub fn parse_file<'a>(file: String, opts: &'a Options) -> Result<MetaFile<'a>> {
     let meta_source = MetaParser::parse(Rule::file, &file)
         .wrap_err("parser error")?
         .next()
         .unwrap();
 
-    let metafile = parse_pair(meta_source);
+    let metafile = parse_pair(meta_source, opts);
     Ok(metafile)
 }
 
-fn parse_pair(pair: Pair<Rule>) -> MetaFile {
-    let mut meta_file = MetaFile::new();
+fn parse_pair<'a>(pair: Pair<Rule>, opts: &'a Options) -> MetaFile<'a> {
+    let mut meta_file = MetaFile::new(opts);
 
     if Rule::file == pair.as_rule() {
         for pair in pair.into_inner() {
             match pair.as_rule() {
                 Rule::source => meta_file.source = parse_source(pair.into_inner()),
+                Rule::header => meta_file.header = parse_defs(pair.into_inner()),
                 Rule::var_def => meta_file.variables = parse_defs(pair.into_inner()),
                 Rule::arr_def => meta_file.arrays = parse_array_defs(pair.into_inner()),
                 Rule::pat_def => meta_file.patterns = parse_defs(pair.into_inner()),
@@ -64,7 +65,7 @@ fn parse_array_defs(pairs: Pairs<Rule>) -> HashMap<String, Vec<String>> {
     map
 }
 
-fn parse_source(pairs: Pairs<Rule>) -> Vec<Source> {
+fn parse_source(pairs: Pairs<Rule>) -> Vec<Src> {
     let mut vec = Vec::new();
     for pair in pairs {
         match pair.as_rule() {
@@ -161,8 +162,9 @@ mod tests {
 
     macro_rules! test_str (
         ($s: expr) => {
+            let opts = Options::new();
             let str = $s.to_string();
-            parse_file(str).unwrap();
+            parse_file(str, &opts).unwrap();
         };
     );
 
