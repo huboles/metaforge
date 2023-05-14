@@ -1,7 +1,7 @@
 WHITESPACE = _{ " " | "\t" | NEWLINE }
 COMMENT    = _{ "-{" ~ (!"}" ~ ANY)* ~ "}" }
 
-sigil = _{ ("$" | "@" | "&") ~ "{" }
+sigil = _{ ("$" | "@" | "&" | "#") ~ "{" }
 
 raw_char = _{ !(sigil) ~ ANY }
 char_seq =  { raw_char+ }
@@ -31,6 +31,7 @@ var_def    =  { &("$") ~ def_block }
 arr_def    =  { &("@") ~ def_block }
 pat_def    =  { &("&") ~ def_block }
 definition = _{ var_def | arr_def | pat_def }
+header    =  { &("#") ~ def_block }
 
 substitution = _{ sigil ~ key ~ "}" }
 var_sub      =  { &("$") ~ substitution }
@@ -41,5 +42,5 @@ identifier   = _{ var_sub | pat_sub | arr_sub }
 source = { (identifier | char_seq)* }
 
 file = {
-    SOI ~ definition* ~ source? ~ EOI
+    SOI ~ header? ~ definition* ~ source? ~ EOI
 }
