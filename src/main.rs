@@ -1,10 +1,11 @@
+use clap::Parser;
 use color_eyre::Result;
-use metaforge::{build_site, log, parse_opts};
+use metaforge::{log, Options, Opts};
 
 fn main() -> Result<()> {
     color_eyre::install()?;
 
-    let opts = parse_opts()?;
+    let opts = Options::try_from(Opts::parse())?;
 
     log!(
         opts,
@@ -19,5 +20,5 @@ fn main() -> Result<()> {
         std::fs::create_dir(&opts.build)?;
     }
 
-    build_site(&opts)
+    todo!("implement DirNode chain")
 }

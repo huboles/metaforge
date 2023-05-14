@@ -10,13 +10,14 @@ use std::collections::HashMap;
 #[grammar = "meta.pest"]
 pub struct MetaParser;
 
-pub fn parse_file(file: &str) -> Result<MetaFile> {
-    let meta_source = MetaParser::parse(Rule::file, file)
+pub fn parse_file<'a>(file: String) -> Result<MetaFile> {
+    let meta_source = MetaParser::parse(Rule::file, &file)
         .wrap_err("parser error")?
         .next()
         .unwrap();
 
-    Ok(parse_pair(meta_source))
+    let metafile = parse_pair(meta_source);
+    Ok(metafile)
 }
 
 fn parse_pair(pair: Pair<Rule>) -> MetaFile {
@@ -41,23 +42,23 @@ fn parse_pair(pair: Pair<Rule>) -> MetaFile {
     meta_file
 }
 
-fn parse_defs(pairs: Pairs<Rule>) -> HashMap<&'_ str, &'_ str> {
+fn parse_defs(pairs: Pairs<Rule>) -> HashMap<String, String> {
     let mut map = HashMap::new();
     for pair in pairs {
         if Rule::assign == pair.as_rule() {
             let (key, val) = parse_assign(pair);
-            map.insert(key, val);
+            map.insert(key.to_string(), val.to_string());
         }
     }
     map
 }
 
-fn parse_array_defs(pairs: Pairs<Rule>) -> HashMap<&str, Vec<&str>> {
+fn parse_array_defs(pairs: Pairs<Rule>) -> HashMap<String, Vec<String>> {
     let mut map = HashMap::new();
     for pair in pairs {
         if Rule::assign == pair.as_rule() {
             let (key, val) = parse_assign_array(pair);
-            map.insert(key, val);
+            map.insert(key.to_string(), val);
         }
     }
     map
@@ -70,7 +71,7 @@ fn parse_source(pairs: Pairs<Rule>) -> Vec<Source> {
             Rule::var_sub => vec.push(source!(var(parse_sub(pair)))),
             Rule::arr_sub => vec.push(source!(arr(parse_sub(pair)))),
             Rule::pat_sub => vec.push(source!(pat(parse_sub(pair)))),
-            Rule::char_seq => vec.push(source!(pair.as_str())),
+            Rule::char_seq => vec.push(source!(pair)),
             // anything that isn't a substitution is a char_seq inside source
             _ => unreachable!(),
         }
@@ -79,7 +80,7 @@ fn parse_source(pairs: Pairs<Rule>) -> Vec<Source> {
     vec
 }
 
-fn parse_sub(pair: Pair<Rule>) -> &'_ str {
+fn parse_sub(pair: Pair<Rule>) -> &str {
     match pair.as_rule() {
         Rule::var_sub | Rule::arr_sub | Rule::pat_sub => {
             let str = pair.as_str();
@@ -97,7 +98,7 @@ fn parse_sub(pair: Pair<Rule>) -> &'_ str {
     }
 }
 
-fn parse_assign(pair: Pair<Rule>) -> (&'_ str, &'_ str) {
+fn parse_assign(pair: Pair<Rule>) -> (&str, &str) {
     let mut key = "";
     let mut val = "";
 
@@ -122,7 +123,7 @@ fn parse_assign(pair: Pair<Rule>) -> (&'_ str, &'_ str) {
     (key, val)
 }
 
-fn parse_assign_array(pair: Pair<Rule>) -> (&str, Vec<&str>) {
+fn parse_assign_array(pair: Pair<Rule>) -> (String, Vec<String>) {
     let mut key = "";
     let mut val = Vec::default();
 
@@ -135,11 +136,11 @@ fn parse_assign_array(pair: Pair<Rule>) -> (&str, Vec<&str>) {
         }
     }
 
-    (key, val)
+    (key.to_string(), val)
 }
 
-fn parse_array(pairs: Pairs<Rule>) -> Vec<&str> {
-    let mut vec: Vec<&str> = Vec::default();
+fn parse_array(pairs: Pairs<Rule>) -> Vec<String> {
+    let mut vec: Vec<String> = Vec::default();
 
     for pair in pairs {
         if Rule::string == pair.as_rule() {
@@ -147,7 +148,7 @@ fn parse_array(pairs: Pairs<Rule>) -> Vec<&str> {
             // remove surrounding quotes from values
             // see parse_assign() for reasoning
             let val = &tmp[1..tmp.len() - 1];
-            vec.push(val);
+            vec.push(val.to_string());
         }
     }
 
@@ -160,7 +161,7 @@ mod tests {
 
     macro_rules! test_str (
         ($s: expr) => {
-            let str = $s;
+            let str = $s.to_string();
             parse_file(str).unwrap();
         };
     );
