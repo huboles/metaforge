@@ -17,3 +17,7 @@ criterion = "0.4"
 [[bench]]
 name = "build_metafile"
 harness = false
+
+[[bench]]
+name = "build_dir"
+harness = false

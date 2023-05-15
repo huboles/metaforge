@@ -17,7 +17,8 @@ pub fn build_file_benchmark(c: &mut Criterion) {
     c.bench_function("build benchmark file", |b| {
         b.iter(|| {
             let string = std::fs::read_to_string(black_box(&source)).expect("read file");
-            let file = metaforge::parse_file(string, black_box(&opts)).expect("parse file");
+            let mut file = metaforge::parse_file(string, black_box(&opts)).expect("parse file");
+            file.path = black_box(source.clone());
             let string = metaforge::build_metafile(&file).expect("build file");
             metaforge::write_file(black_box(&source), string, black_box(&opts))
                 .expect("write file");
@@ -25,5 +26,10 @@ pub fn build_file_benchmark(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, build_file_benchmark);
+criterion_group! {
+    name = benches;
+    config = Criterion::default().sample_size(10);
+    targets = build_file_benchmark
+}
+
 criterion_main!(benches);

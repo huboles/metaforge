@@ -1,5 +1,8 @@
 use crate::{build_metafile, parse_file, write_file, Options};
-use color_eyre::{eyre::eyre, Result};
+use color_eyre::{
+    eyre::{bail, eyre},
+    Result,
+};
 use std::collections::HashMap;
 use std::{fs, path::PathBuf};
 
@@ -16,7 +19,10 @@ pub struct MetaFile<'a> {
 
 impl<'a> MetaFile<'a> {
     pub fn build(path: PathBuf, opts: &'a Options) -> Result<Self> {
-        let str = fs::read_to_string(&path)?;
+        let str = match fs::read_to_string(&path) {
+            Ok(str) => str,
+            Err(_) => bail!("{} does not exist", path.display()),
+        };
         let mut metafile = parse_file(str, opts)?;
         metafile.path = path;
         Ok(metafile)
@@ -59,7 +65,7 @@ impl<'a> MetaFile<'a> {
                 .unwrap_or_default();
             Ok(name)
         } else {
-            color_eyre::eyre::bail!("could not get name from: {}", self.path.display());
+            color_eyre::eyre::bail!("could not get name from: {:#?}", self);
         }
     }
 

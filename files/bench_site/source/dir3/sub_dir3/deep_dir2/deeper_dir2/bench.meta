@@ -1,0 +1,7 @@
+${ variable = "GOOD" }
+
+@{ benchmark.array.item = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'] }
+
+# BENCHMARK
+
+Testing a lot of pages as a benchmark
