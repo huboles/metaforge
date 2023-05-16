@@ -12,7 +12,7 @@ pub fn build_dir(c: &mut Criterion) {
     opts.pattern = dir.join("pattern");
     opts.clean = true;
 
-    c.bench_function("build benchmark directory", |b| {
+    c.bench_function("build dir", |b| {
         if opts.build.exists() {
             std::fs::remove_dir_all(&opts.build).expect("clean build dir");
         }

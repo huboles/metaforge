@@ -14,7 +14,7 @@ pub fn build_file_benchmark(c: &mut Criterion) {
 
     let source = opts.source.join("benchmark.meta");
 
-    c.bench_function("build benchmark file", |b| {
+    c.bench_function("build file", |b| {
         b.iter(|| {
             let string = std::fs::read_to_string(black_box(&source)).expect("read file");
             let mut file = metaforge::parse_file(string, black_box(&opts)).expect("parse file");

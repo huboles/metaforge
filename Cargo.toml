@@ -14,9 +14,9 @@ pest_derive = "2"
 criterion = "0.4"
 
 [[bench]]
-name = "build_metafile"
+name = "file"
 harness = false
 
 [[bench]]
-name = "build_dir"
+name = "dir"
 harness = false
