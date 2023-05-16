@@ -1,6 +1,7 @@
 ${
     override = 'BAD'
     global = 'GOOD'
+    local_global = 'BAD'
 }
 
 &{ 
@@ -9,4 +10,5 @@ ${
     test.default = 'bad'
     test.blank = 'bad'
     test.global = 'good'
+    test.local_global = 'good'
 }

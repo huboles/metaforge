@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 pub fn build_file_benchmark(c: &mut Criterion) {
-    let dir = std::path::PathBuf::from("files/site")
+    let dir = std::path::PathBuf::from("files/benchmark_site")
         .canonicalize()
         .unwrap();
 
