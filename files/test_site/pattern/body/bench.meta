@@ -1,0 +1,6 @@
+<body>
+    &{bench.header}
+    ${bench_variable}
+    &{SOURCE}
+    &{bench.footer}
+<body>

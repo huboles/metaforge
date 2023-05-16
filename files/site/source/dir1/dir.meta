@@ -1,9 +1,0 @@
-@{
-    list.item.items = ['A', 'Single','Word','Per','Item']
-}
-
-# LIST
-
-This is to test using arrays as lists.
-
-&{list}

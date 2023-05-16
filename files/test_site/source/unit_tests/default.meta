@@ -1,0 +1,12 @@
+${
+    override = 'BAD'
+    global = 'GOOD'
+}
+
+&{ 
+    base = 'bare'
+    test.override = 'bad'
+    test.default = 'bad'
+    test.blank = 'bad'
+    test.global = 'good'
+}

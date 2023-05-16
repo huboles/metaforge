@@ -1,0 +1,4 @@
+&{base = 'bare'}
+
+${local_global}
+${global}

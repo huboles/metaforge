@@ -1,0 +1,3 @@
+${ local_global = 'GOOD' }
+
+&{ test.local_global = 'good' }

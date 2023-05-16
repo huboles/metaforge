@@ -1,0 +1,3 @@
+@{ test.arr = BLANK }
+
+&{ test = 'blank_arr' }

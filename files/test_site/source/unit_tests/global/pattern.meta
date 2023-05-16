@@ -1,0 +1,4 @@
+&{ base = 'bare' } 
+
+&{test.global}
+&{test.local_global}

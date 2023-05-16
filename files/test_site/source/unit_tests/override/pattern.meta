@@ -1,0 +1,5 @@
+&{
+    test = 'override'
+    test.override = 'good'
+    test.default = DEFAULT
+}

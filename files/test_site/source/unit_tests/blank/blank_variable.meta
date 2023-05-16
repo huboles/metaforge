@@ -1,0 +1,3 @@
+${ variable = BLANK }
+
+&{ test = 'blank_variable' }

@@ -1,4 +1,0 @@
-<header>
-<p>A list called: ${list_name}</p>
-&{list}
-</header>
