@@ -30,13 +30,14 @@ pub struct Opts {
     /// Don't stop on file failure [FALSE]
     #[arg(long, default_value_t = false)]
     force: bool,
-    /// Stop on undefined variables, patterns, and arrays [FALSE]
+    /// Stop on undefined variables and arrays [FALSE]
     #[arg(long, default_value_t = false)]
     undefined: bool,
     /// Clean build directory before building site [FALSE]
     #[arg(long, default_value_t = false)]
     clean: bool,
-    /// Don't convert markdown to html. Runs even if pandoc is not installed [FALSE]
+    /// Don't convert markdown to html.
+    /// Runs even if pandoc isn't installed [FALSE]
     #[arg(long, default_value_t = false)]
     no_pandoc: bool,
 }
