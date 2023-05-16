@@ -1,14 +1,14 @@
-use crate::{log, parse_file, MetaFile, Options, Src, Sub};
+use crate::{parse_file, MetaFile, Src, Sub};
 use color_eyre::{eyre::bail, Result};
 use pandoc::{InputFormat, InputKind, OutputFormat, OutputKind, Pandoc, PandocOutput};
-use std::{
-    collections::HashMap,
-    fs,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashMap, fs};
 
 pub fn build_metafile(file: &MetaFile) -> Result<String> {
-    let html = get_source_html(file, file.opts)?;
+    if file.header.blank {
+        return Ok(String::new());
+    }
+
+    let html = get_source_html(file)?;
 
     let pattern = get_pattern("base", file)?;
     let mut base = parse_file(pattern, file.opts)?;
@@ -21,14 +21,11 @@ pub fn build_metafile(file: &MetaFile) -> Result<String> {
     Ok(output)
 }
 
-pub fn write_file(path: &Path, html: String, opts: &Options) -> Result<()> {
-    let dest = find_dest(path, opts)?;
-    // want newline to end file
-    fs::write(dest, html)?;
-    Ok(())
-}
-
 fn metafile_to_string(file: &MetaFile) -> Result<String> {
+    if file.header.blank {
+        return Ok(String::new());
+    }
+
     let mut output = String::default();
     let mut arrays = false;
 
@@ -56,25 +53,22 @@ fn metafile_to_string(file: &MetaFile) -> Result<String> {
     }
 
     if arrays {
-        log!(file.opts, "\t\t\texpanding arrays", 4);
         expand_arrays(output, file)
     } else {
         Ok(output)
     }
 }
 
-fn get_source_html(file: &MetaFile, opts: &Options) -> Result<String> {
-    log!(opts, "\tbuilding source", 2);
-    let file = metafile_to_string(file)?;
+fn get_source_html(file: &MetaFile) -> Result<String> {
+    let string = metafile_to_string(file)?;
 
-    if opts.no_pandoc {
-        return Ok(file);
+    if file.opts.no_pandoc || !file.header.pandoc {
+        return Ok(string);
     }
 
-    log!(opts, "\t\tcalling pandoc", 3);
     let mut pandoc = Pandoc::new();
     pandoc
-        .set_input(InputKind::Pipe(file))
+        .set_input(InputKind::Pipe(string))
         .set_output(OutputKind::Pipe)
         .set_input_format(InputFormat::Markdown, vec![])
         .set_output_format(OutputFormat::Html, vec![]);
@@ -88,34 +82,18 @@ fn get_source_html(file: &MetaFile, opts: &Options) -> Result<String> {
 
 fn get_pattern(key: &str, file: &MetaFile) -> Result<String> {
     // SOURCE is already expanded in the initial build_metafile() call
-    // we just need to return that
     if key == "SOURCE" {
-        log!(file.opts, "\t\t\treturning SOURCE", 4);
         if let Some(source) = file.patterns.get("SOURCE") {
             return Ok(source.to_string());
         }
     }
 
-    log!(file.opts, format!("\t\tpattern: {}", key), 3);
-    // anything not defined should have a default.meta file to fall back to
     let mut filename: String;
     if let Some(name) = file.get_pat(key) {
         filename = name.to_string();
     } else {
+        // anything not defined should have a default.meta file to fall back to
         filename = "default".to_string()
-    }
-
-    // if we're building from base pattern we need to wait on
-    // parsing/expansion so we can build and convert source to html
-    // we just want to return the string right now
-    if key == "base" {
-        log!(file.opts, "\t\t\treturning base", 4);
-        let pattern_path = key.to_string() + "/" + &filename;
-        let mut path = file.opts.pattern.join(pattern_path);
-        path.set_extension("meta");
-
-        let base = fs::read_to_string(&path)?;
-        return Ok(base);
     }
 
     // BLANK returns nothing, so no more processing needs to be done
@@ -123,9 +101,23 @@ fn get_pattern(key: &str, file: &MetaFile) -> Result<String> {
         return Ok(String::from(""));
     };
 
-    // DEFAULT override for patterns defined higher in chain
+    // DEFAULT override for patterns overriding globals
     if filename == "DEFAULT" {
         filename = "default".to_string();
+    }
+
+    // if we're building from base pattern we need to wait on
+    // parsing/expansion so we can build and convert source to html
+    // we just want to return the string right now
+    if key == "base" {
+        let pattern_path = key.to_string() + "/" + &filename;
+        let mut path = file.opts.pattern.join(pattern_path);
+        path.set_extension("meta");
+
+        return match fs::read_to_string(&path) {
+            Ok(str) => Ok(str),
+            Err(_) => bail!("could not find base file {}", path.display()),
+        };
     }
 
     let pattern_path = key.replace('.', "/") + "/" + &filename;
@@ -151,15 +143,6 @@ fn get_variable(key: &str, file: &MetaFile) -> Result<String> {
     } else {
         Ok(String::new())
     }
-}
-
-fn find_dest(path: &Path, opts: &Options) -> Result<PathBuf> {
-    let path = path.canonicalize()?;
-
-    let mut path = opts.build.join(path.strip_prefix(&opts.source)?);
-    path.set_extension("html");
-
-    Ok(path)
 }
 
 fn expand_arrays(input: String, file: &MetaFile) -> Result<String> {
@@ -226,8 +209,11 @@ fn get_max_size(map: &HashMap<String, &[String]>) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn build_options() -> Result<Options> {
-        let dir = PathBuf::from("files/site").canonicalize()?;
+    use crate::Options;
+    use std::path::PathBuf;
+
+    fn unit_test(test: &str, result: &str) -> Result<()> {
+        let dir = PathBuf::from("files/test_site").canonicalize()?;
 
         let mut opts = Options::new();
         opts.root = dir.clone();
@@ -236,32 +222,67 @@ mod tests {
         opts.pattern = dir.join("pattern");
         opts.clean = true;
 
-        Ok(opts)
+        let test_dir = opts.source.join("unit_tests");
+        let mut file_path = test_dir.join(test);
+        file_path.set_extension("meta");
+        let file = MetaFile::build(file_path, &opts)?;
+
+        let output = build_metafile(&file)?;
+
+        assert_eq!(output, result);
+
+        Ok(())
     }
 
     #[test]
     fn test_find_dest() -> Result<()> {
-        let opts = build_options()?;
-        let path = opts.source.join("dir1/dir.meta");
-        assert_eq!(find_dest(&path, &opts)?, opts.build.join("dir1/dir.html"));
+        unit_test("find_dest", "<html>\n\n</html>\n")
+    }
+
+    #[test]
+    fn test_blank() -> Result<()> {
+        unit_test("blank/blank_pattern", "")?;
+        unit_test("blank/blank_variable", "<html>\n</html>\n")?;
+        unit_test("blank/blank_array", "<html>\n</html>\n")?;
         Ok(())
     }
 
     #[test]
-    fn test_metafile_to_string() -> Result<()> {
-        let opts = build_options()?;
-        let path = opts.source.join("dir1/sub_dir1/deep2/deep.meta");
-        let expanded = "<html><body>GOOD</body></html>";
-        assert_eq!(build_metafile(&MetaFile::build(path, &opts)?)?, expanded);
+    fn test_comment() -> Result<()> {
+        unit_test("blank/comment", "<html>\n\n</html>\n")?;
+        unit_test(
+            "blank/inline_comment",
+            "<html>\n<p>inline comment</p>\n</html>\n",
+        )?;
         Ok(())
     }
 
     #[test]
-    fn test_get_pattern() -> Result<()> {
-        let opts = build_options()?;
-        let file = MetaFile::new(&opts);
-        let pat = get_pattern("header", &file)?;
-        assert_eq!(pat, "<header>HEADER</header>");
+    fn test_expand() -> Result<()> {
+        unit_test(
+            "expand/variable_in_source",
+            "<html>\n<p>GOOD</p>\n</html>\n",
+        )?;
+        unit_test("expand/variable_in_pattern", "<html>\nGOOD</html>\n")?;
+        unit_test("expand/array_in_source", "<html>\n<p>12345</p>\n</html>\n")?;
+        unit_test("expand/array_in_pattern", "<html>\n12345</html>\n")?;
+        unit_test("expand/pattern_in_source", "<p>GOOD</p>\n")?;
+        unit_test("expand/pattern_in_pattern", "<html>\nGOOD\nGOOD\n</html>\n")?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_override() -> Result<()> {
+        unit_test("override/variable", "<html>\n<p>GOOD</p>\n</html>\n")?;
+        unit_test("override/pattern", "<html>\nGOOD\nGOOD\n</html>\n")?;
+        Ok(())
+    }
+
+    #[test]
+    #[ignore = "fix global variables"]
+    fn test_global() -> Result<()> {
+        unit_test("global/variable", "GOODGOOD\n")?;
+        unit_test("global/pattern", "GOODGOOD")?;
         Ok(())
     }
 }

@@ -1,4 +1,4 @@
-use crate::{source, MetaFile, Options, Src, Sub};
+use crate::{source, Header, MetaFile, Options, Src, Sub};
 use color_eyre::{eyre::WrapErr, Result};
 use pest::{
     iterators::{Pair, Pairs},
@@ -27,7 +27,7 @@ fn parse_pair<'a>(pair: Pair<Rule>, opts: &'a Options) -> MetaFile<'a> {
         for pair in pair.into_inner() {
             match pair.as_rule() {
                 Rule::source => meta_file.source = parse_source(pair.into_inner()),
-                Rule::header => meta_file.header = parse_defs(pair.into_inner()),
+                Rule::header => meta_file.header = Header::from(parse_defs(pair.into_inner())),
                 Rule::var_def => meta_file.variables = parse_defs(pair.into_inner()),
                 Rule::arr_def => meta_file.arrays = parse_array_defs(pair.into_inner()),
                 Rule::pat_def => meta_file.patterns = parse_defs(pair.into_inner()),

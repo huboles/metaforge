@@ -1,4 +1,4 @@
-use crate::{build_metafile, parse_file, write_file, Options};
+use crate::{build_metafile, parse_file, Options};
 use color_eyre::{
     eyre::{bail, eyre},
     Result,
@@ -6,11 +6,49 @@ use color_eyre::{
 use std::collections::HashMap;
 use std::{fs, path::PathBuf};
 
+#[derive(Debug, Clone, Default)]
+pub struct Header {
+    pub blank: bool,
+    pub panic_default: bool,
+    pub panic_undefined: bool,
+    pub filetype: String,
+    pub pandoc: bool,
+}
+
+impl Header {
+    pub fn new() -> Self {
+        Self {
+            blank: false,
+            panic_default: false,
+            panic_undefined: false,
+            filetype: String::from("html"),
+            pandoc: true,
+        }
+    }
+}
+
+impl From<HashMap<String, String>> for Header {
+    fn from(value: HashMap<String, String>) -> Self {
+        let mut header = Header::new();
+        for (key, val) in value.iter() {
+            match &key[..] {
+                "blank" => header.blank = val == "true",
+                "panic_default" => header.panic_default = val == "true",
+                "panic_undefined" => header.panic_undefined = val == "true",
+                "pandoc" => header.pandoc = val == "true",
+                "filetype" => header.filetype = val.to_string(),
+                _ => continue,
+            }
+        }
+        header
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct MetaFile<'a> {
     pub opts: &'a Options,
     pub path: PathBuf,
-    pub header: HashMap<String, String>,
+    pub header: Header,
     pub variables: HashMap<String, String>,
     pub arrays: HashMap<String, Vec<String>>,
     pub patterns: HashMap<String, String>,
@@ -32,12 +70,22 @@ impl<'a> MetaFile<'a> {
         Self {
             opts,
             path: PathBuf::new(),
-            header: HashMap::new(),
+            header: Header::new(),
             variables: HashMap::new(),
             arrays: HashMap::new(),
             patterns: HashMap::new(),
             source: Vec::new(),
         }
+    }
+
+    pub fn dest(&self) -> Result<PathBuf> {
+        let mut path = self
+            .opts
+            .build
+            .join(self.path.strip_prefix(&self.opts.source)?);
+        path.set_extension("html");
+
+        Ok(path)
     }
 
     pub fn name(&self) -> Result<String> {
@@ -65,7 +113,7 @@ impl<'a> MetaFile<'a> {
                 .unwrap_or_default();
             Ok(name)
         } else {
-            color_eyre::eyre::bail!("could not get name from: {:#?}", self);
+            color_eyre::eyre::bail!("could not get name from: {}", self.path.display());
         }
     }
 
@@ -182,7 +230,7 @@ impl<'a> DirNode<'a> {
             file.merge(&self.global);
             match build_metafile(file) {
                 Ok(str) => {
-                    write_file(&file.path, str, file.opts)?;
+                    fs::write(file.dest()?, str)?;
                 }
                 Err(e) => {
                     if self.opts.force {
