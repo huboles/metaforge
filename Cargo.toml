@@ -14,9 +14,5 @@ pest_derive = "2"
 criterion = "0.4"
 
 [[bench]]
-name = "file"
-harness = false
-
-[[bench]]
 name = "dir"
 harness = false
