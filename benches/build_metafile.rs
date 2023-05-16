@@ -20,8 +20,7 @@ pub fn build_file_benchmark(c: &mut Criterion) {
             let mut file = metaforge::parse_file(string, black_box(&opts)).expect("parse file");
             file.path = black_box(source.clone());
             let string = metaforge::build_metafile(&file).expect("build file");
-            metaforge::write_file(black_box(&source), string, black_box(&opts))
-                .expect("write file");
+            std::fs::write(file.dest().expect("find dest"), string).expect("write file");
         })
     });
 }
