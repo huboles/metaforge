@@ -27,7 +27,9 @@ fn parse_pair<'a>(pair: Pair<Rule>, opts: &'a Options) -> MetaFile<'a> {
         for pair in pair.into_inner() {
             match pair.as_rule() {
                 Rule::source => meta_file.source = parse_source(pair.into_inner()),
-                Rule::header => meta_file.header = Header::from(parse_defs(pair.into_inner())),
+                Rule::header => {
+                    meta_file.header = Header::from(parse_header_defs(pair.into_inner()))
+                }
                 Rule::var_def => meta_file.variables = parse_defs(pair.into_inner()),
                 Rule::arr_def => meta_file.arrays = parse_array_defs(pair.into_inner()),
                 Rule::pat_def => meta_file.patterns = parse_defs(pair.into_inner()),
@@ -48,6 +50,17 @@ fn parse_defs(pairs: Pairs<Rule>) -> HashMap<String, String> {
     for pair in pairs {
         if Rule::assign == pair.as_rule() {
             let (key, val) = parse_assign(pair);
+            map.insert(key.to_string(), val.to_string());
+        }
+    }
+    map
+}
+
+fn parse_header_defs(pairs: Pairs<Rule>) -> HashMap<String, String> {
+    let mut map = HashMap::new();
+    for pair in pairs {
+        if Rule::header_assign == pair.as_rule() {
+            let (key, val) = parse_header_assign(pair);
             map.insert(key.to_string(), val.to_string());
         }
     }
@@ -111,6 +124,31 @@ fn parse_assign(pair: Pair<Rule>) -> (&str, &str) {
             let tmp = pair.as_str();
             // blank and default shoud be handled by whoever is getting the value
             if tmp == "BLANK" || tmp == "DEFAULT" {
+                return (key, tmp);
+            }
+            // remove surrounding quotes from values by returning
+            // everything except first and last characters
+            // a string is defined as " ... " or ' ... '
+            // so it's safe to strip these characters
+            val = &tmp[1..tmp.len() - 1];
+        }
+    }
+
+    (key, val)
+}
+
+fn parse_header_assign(pair: Pair<Rule>) -> (&str, &str) {
+    let mut key = "";
+    let mut val = "";
+
+    for pair in pair.into_inner() {
+        if Rule::key == pair.as_rule() {
+            key = pair.as_str();
+        }
+        if Rule::header_value == pair.as_rule() {
+            let tmp = pair.as_str();
+            // blank and default shoud be handled by whoever is getting the value
+            if tmp == "BLANK" || tmp == "true" || tmp == "false" {
                 return (key, tmp);
             }
             // remove surrounding quotes from values by returning

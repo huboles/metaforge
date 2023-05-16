@@ -1,6 +1,5 @@
-use crate::{parse_file, MetaFile, Src, Sub};
+use crate::{MetaFile, Src, Sub};
 use color_eyre::{eyre::bail, Result};
-use pandoc::{InputFormat, InputKind, OutputFormat, OutputKind, Pandoc, PandocOutput};
 use std::{collections::HashMap, fs};
 
 pub fn build_metafile(file: &MetaFile) -> Result<String> {
@@ -11,7 +10,7 @@ pub fn build_metafile(file: &MetaFile) -> Result<String> {
     let html = get_source_html(file)?;
 
     let pattern = get_pattern("base", file)?;
-    let mut base = parse_file(pattern, file.opts)?;
+    let mut base = crate::parse_file(pattern, file.opts)?;
 
     base.merge(file);
     base.patterns.insert("SOURCE".to_string(), html);
@@ -66,14 +65,14 @@ fn get_source_html(file: &MetaFile) -> Result<String> {
         return Ok(string);
     }
 
-    let mut pandoc = Pandoc::new();
+    let mut pandoc = pandoc::Pandoc::new();
     pandoc
-        .set_input(InputKind::Pipe(string))
-        .set_output(OutputKind::Pipe)
-        .set_input_format(InputFormat::Markdown, vec![])
-        .set_output_format(OutputFormat::Html, vec![]);
+        .set_input(pandoc::InputKind::Pipe(string))
+        .set_output(pandoc::OutputKind::Pipe)
+        .set_input_format(pandoc::InputFormat::Markdown, vec![])
+        .set_output_format(pandoc::OutputFormat::Html, vec![]);
 
-    if let Ok(PandocOutput::ToBuffer(html)) = pandoc.execute() {
+    if let Ok(pandoc::PandocOutput::ToBuffer(html)) = pandoc.execute() {
         Ok(html)
     } else {
         bail!("pandoc could not write to buffer")
@@ -279,10 +278,60 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "fix global variables"]
+    fn test_headers() -> Result<()> {
+        unit_test("header/pandoc", "# This should not become html\n")?;
+        unit_test("header/blank", "")?;
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_filetype_header() -> Result<()> {
+        let dir = PathBuf::from("files/test_site").canonicalize()?;
+
+        let mut opts = Options::new();
+        opts.root = dir.clone();
+        opts.source = dir.join("source");
+        opts.build = dir.join("build");
+
+        let path = opts.source.join("unit_tests/header/filetype.meta");
+        let file = MetaFile::build(path, &opts)?;
+
+        assert_eq!(
+            file.dest()?,
+            PathBuf::from(
+                "/home/huck/repos/metaforge/files/test_site/build/unit_tests/header/filetype.rss"
+            )
+        );
+
+        Ok(())
+    }
+
+    #[test]
     fn test_global() -> Result<()> {
-        unit_test("global/variable", "GOODGOOD\n")?;
-        unit_test("global/pattern", "GOODGOOD")?;
+        let dir = PathBuf::from("files/test_site/").canonicalize()?;
+
+        let mut opts = Options::new();
+        opts.root = dir.clone();
+        opts.source = dir.join("source");
+        opts.build = dir.join("build");
+        opts.pattern = dir.join("pattern");
+
+        let mut dir_node = crate::DirNode::build(dir.join("source/unit_tests/global"), &opts)?;
+        let global = MetaFile::build(dir.join("source/default.meta"), &opts)?;
+        dir_node.map(&global)?;
+        dir_node.build_dir()?;
+
+        assert_eq!(
+            fs::read_to_string(dir.join("build/unit_tests/global/pattern.html"))?,
+            "<p>GOOD GOOD</p>\n"
+        );
+
+        assert_eq!(
+            fs::read_to_string(dir.join("build/unit_tests/global/variable.html"))?,
+            "<p>GOODGOOD</p>\n"
+        );
+
         Ok(())
     }
 }

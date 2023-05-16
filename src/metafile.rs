@@ -83,7 +83,7 @@ impl<'a> MetaFile<'a> {
             .opts
             .build
             .join(self.path.strip_prefix(&self.opts.source)?);
-        path.set_extension("html");
+        path.set_extension(&self.header.filetype);
 
         Ok(path)
     }

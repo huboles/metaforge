@@ -31,7 +31,8 @@ arr_def    =  { &("@") ~ def_block }
 pat_def    =  { &("&") ~ def_block }
 definition = _{ var_def | arr_def | pat_def }
 
-header_assign =  { "!"? ~ key ~ "=" ~ value }
+header_value = ${ string | "true" | "false" | "DEFAULT" }
+header_assign =  { "!"? ~ key ~ "=" ~ header_value }
 header_block  = _{ sigil ~ header_assign* ~ "}" }
 header    =  { &("#") ~ header_block }
 

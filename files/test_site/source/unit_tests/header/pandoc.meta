@@ -1,0 +1,5 @@
+#{ pandoc = false }
+
+&{ base = 'bare' }
+
+# This should not become html
