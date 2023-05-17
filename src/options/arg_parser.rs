@@ -18,6 +18,9 @@ pub struct Opts {
     /// Pattern directory [CURRENT_DIR/pattern]
     #[arg(short, long, value_name = "PATTERN_DIR")]
     pub pattern: Option<String>,
+    /// Create a new skeleton directory
+    #[arg(long, default_value_t = false)]
+    pub new: bool,
     /// Enable extra output.
     /// Repeated flags give more info
     #[arg(short, long, action = clap::ArgAction::Count)]

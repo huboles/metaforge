@@ -3,5 +3,9 @@ fn main() -> color_eyre::Result<()> {
 
     let opts = metaforge::get_opts()?;
 
-    metaforge::build_dir(&opts)
+    if opts.new {
+        metaforge::new_site(&opts)
+    } else {
+        metaforge::build_dir(&opts)
+    }
 }

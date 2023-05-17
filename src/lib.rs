@@ -14,6 +14,7 @@ pub use parser::*;
 
 use clap::Parser;
 use color_eyre::Result;
+use std::fs;
 
 pub fn get_opts() -> Result<Options> {
     let opts = Options::try_from(Opts::parse())?;
@@ -37,4 +38,40 @@ pub fn build_dir(opts: &Options) -> Result<()> {
     source.map(&global_init)?;
 
     source.build_dir()
+}
+
+pub fn new_site(opts: &Options) -> Result<()> {
+    macro_rules! exist_or_build(
+        ($p:expr) => {
+            if !$p.exists() {
+                fs::create_dir_all(&$p)?;
+            }
+        };
+    );
+
+    macro_rules! write_default (
+        ($p:expr, $m:literal) => {
+            let path = opts.pattern.join($p).join("default.meta");
+            fs::write(path, $m)?;
+        };
+    );
+
+    exist_or_build!(opts.root);
+    exist_or_build!(opts.source);
+    exist_or_build!(opts.pattern);
+
+    exist_or_build!(opts.pattern.join("base"));
+    exist_or_build!(opts.pattern.join("body"));
+    exist_or_build!(opts.pattern.join("head"));
+    exist_or_build!(opts.pattern.join("foot"));
+
+    write_default!("base", "<html>\n&{head}\n&{body}\n&{foot}\n</html>\n");
+    write_default!("body", "<body>\n&{SOURCE}\n</body>\n");
+    write_default!("head", "<head>\n<title>HELLO WORLD</title>\n</head>\n");
+    write_default!("foot", "<foot>\n${footer}\n</foot>\n");
+
+    let path = opts.source.join("hello_world.meta");
+    fs::write(path, "${ footer = 'made using metaforge' }\n# it works\ncall `metaforge -h` for help, or read the [readme](https://huck.website/code/metaforge)\n")?;
+
+    Ok(())
 }

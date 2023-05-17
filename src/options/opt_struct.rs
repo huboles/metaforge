@@ -13,6 +13,7 @@ pub struct Options {
     pub undefined: bool,
     pub clean: bool,
     pub no_pandoc: bool,
+    pub new: bool,
 }
 
 impl Options {
@@ -28,6 +29,7 @@ impl Options {
             undefined: false,
             clean: false,
             no_pandoc: false,
+            new: false,
         }
     }
 }
@@ -43,6 +45,7 @@ impl TryFrom<crate::Opts> for Options {
         options.undefined = value.undefined;
         options.clean = value.clean;
         options.no_pandoc = value.no_pandoc;
+        options.new = value.new;
 
         if let Some(root) = value.root.as_deref() {
             options.root = PathBuf::from(root).canonicalize()?;
