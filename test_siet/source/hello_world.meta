@@ -1,3 +1,0 @@
-${ footer = 'made using metaforge' }
-# it works
-call `metaforge -h` for help, or read the [readme](https://huck.website/code/metaforge)
