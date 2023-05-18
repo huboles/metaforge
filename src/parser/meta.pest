@@ -2,6 +2,7 @@ WHITESPACE = _{ " " | "\t" | NEWLINE }
 COMMENT    = _{ "-{" ~ (!"}" ~ ANY)* ~ "}" }
 
 sigil = _{ ("$" | "@" | "&" | "#" | "-") ~ "{" }
+scope = _{ "!" | "*" }
 
 raw_char = _{ !(sigil) ~ ANY }
 char_seq =  ${ raw_char+ }
@@ -23,18 +24,18 @@ key_chars = @{ (ASCII_ALPHANUMERIC | "_" | ".")* }
 key       = @{ key_chars }
 
 value  = ${ string | array | "BLANK" | "DEFAULT" }
-assign =  { "*"? ~ key ~ "=" ~ value }
+assign =  { scope? ~ key ~ "=" ~ value }
 
 def_block  = _{ sigil ~ assign* ~ "}" }
 var_def    =  { &("$") ~ def_block }
 arr_def    =  { &("@") ~ def_block }
 pat_def    =  { &("&") ~ def_block }
-definition = _{ var_def | arr_def | pat_def }
+definition = _{ scope? ~ (var_def | arr_def | pat_def) }
 
 header_value = ${ string | "true" | "false" | "DEFAULT" }
-header_assign =  { "!"? ~ key ~ "=" ~ header_value }
+header_assign =  { scope? ~ key ~ "=" ~ header_value }
 header_block  = _{ sigil ~ header_assign* ~ "}" }
-header    =  { &("#") ~ header_block }
+header    =  { scope? ~ &("#") ~ header_block }
 
 substitution = _{ sigil ~ key ~ "}" }
 var_sub      =  { &("$") ~ substitution }

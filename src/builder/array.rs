@@ -1,4 +1,4 @@
-use crate::{MetaFile, Src, Sub};
+use crate::{MetaFile, Scope, Src};
 use color_eyre::Result;
 use std::collections::HashMap;
 
@@ -8,7 +8,7 @@ pub fn expand_arrays(input: String, file: &MetaFile) -> Result<String> {
         .iter()
         // filter out arrays from source vec
         .filter_map(|x| {
-            if let Src::Sub(Sub::Arr(array)) = x {
+            if let Src::Arr(array) = x {
                 Some(array)
             } else {
                 None
@@ -17,20 +17,22 @@ pub fn expand_arrays(input: String, file: &MetaFile) -> Result<String> {
         // make a hash map of [keys in source] -> [defined arrays]
         .map(|key| {
             // concat array to pattern name to get key in HashMap
-            let name = file.name().unwrap();
+            let name = file.name().unwrap_or_default();
             let long_key = name + "." + key;
 
-            let value: &[String];
-            if let Some(val) = file.get_arr(&long_key) {
-                value = val;
-            } else if let Some(val) = file.get_arr(key) {
-                value = val;
+            let value = if let Some(val) = file.get_arr(&Scope::into_global(long_key.to_string())) {
+                val
+            } else if let Some(val) = file.get_arr(&Scope::into_local(long_key.to_string())) {
+                val
+            } else if let Some(val) = file.get_arr(&Scope::into_global(key)) {
+                val
+            } else if let Some(val) = file.get_arr(&Scope::into_local(key)) {
+                val
             } else if file.opts.undefined {
                 panic!("undefined array called: {}, {}", key, long_key);
             } else {
-                value = &[];
-            }
-
+                &[]
+            };
             (key.to_string(), value)
         })
         .collect();

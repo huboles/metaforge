@@ -1,32 +1,43 @@
-use crate::Rule;
+use crate::{Rule, Scope};
 use pest::iterators::{Pair, Pairs};
 use std::collections::HashMap;
 
-pub fn parse_array_defs(pairs: Pairs<Rule>) -> HashMap<String, Vec<String>> {
+pub fn parse_array_defs(pairs: Pairs<Rule>) -> HashMap<Scope, Vec<String>> {
     let mut map = HashMap::new();
     for pair in pairs {
         if Rule::assign == pair.as_rule() {
             let (key, val) = parse_assign_array(pair);
-            map.insert(key.to_string(), val);
+            map.insert(key, val);
         }
     }
     map
 }
 
-fn parse_assign_array(pair: Pair<Rule>) -> (String, Vec<String>) {
+fn parse_assign_array(pair: Pair<Rule>) -> (Scope, Vec<String>) {
     let mut key = "";
     let mut val = Vec::default();
+    let mut global = true;
 
     for pair in pair.into_inner() {
-        if Rule::key == pair.as_rule() {
-            key = pair.as_str();
-        }
-        if Rule::value == pair.as_rule() {
-            val = parse_array(pair.into_inner());
+        match pair.as_rule() {
+            Rule::scope => {
+                if pair.as_str() == "*" {
+                    global = false;
+                } else {
+                    global = true;
+                }
+            }
+            Rule::key => key = pair.as_str(),
+            Rule::value => val = parse_array(pair.into_inner()),
+            _ => unreachable!(),
         }
     }
 
-    (key.to_string(), val)
+    if global {
+        (Scope::into_global(key), val)
+    } else {
+        (Scope::into_local(key), val)
+    }
 }
 
 fn parse_array(pairs: Pairs<Rule>) -> Vec<String> {

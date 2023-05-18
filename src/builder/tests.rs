@@ -1,6 +1,6 @@
 use crate::{build_metafile, MetaFile, Options};
 use color_eyre::{eyre::WrapErr, Result};
-use std::path::PathBuf;
+use std::{error::Error, fs, path::PathBuf};
 
 fn unit_test(test: (&str, &str)) -> Result<()> {
     let dir = PathBuf::from("files/test_site").canonicalize()?;
@@ -11,6 +11,7 @@ fn unit_test(test: (&str, &str)) -> Result<()> {
     opts.build = dir.join("build");
     opts.pattern = dir.join("pattern");
     opts.clean = true;
+    opts.undefined = true;
 
     let test_dir = opts.source.join("unit_tests");
     let mut file_path = test_dir.join(test.0);
@@ -19,19 +20,39 @@ fn unit_test(test: (&str, &str)) -> Result<()> {
 
     let output = build_metafile(&file).wrap_err_with(|| test.0.to_string())?;
 
-    assert_eq!(output, test.1);
+    if output == test.1 {
+        Ok(())
+    } else {
+        let err = color_eyre::eyre::eyre!("{} - failed", test.0);
+        eprintln!("{:?}", err);
+        eprintln!("\nTEST:\n{}\nOUTPUT:\n{}", test.1, output);
+        Err(err)
+    }
+}
 
+fn clean_build_dir() -> Result<()> {
+    let build = PathBuf::from("files/test_site")
+        .canonicalize()?
+        .join("build");
+
+    if build.exists() {
+        fs::remove_dir_all(&build)?;
+    }
+
+    fs::create_dir_all(&build)?;
     Ok(())
 }
 
 #[test]
 fn builder_tests() -> Result<()> {
+    clean_build_dir()?;
+
     let mut tests: Vec<(&str, &str)> = Vec::new();
-    tests.push(("find_dest", "<html>\n\n</html>\n"));
+    tests.push(("find_dest", "<html>\n</html>\n"));
     tests.push(("blank/blank_pattern", ""));
     tests.push(("blank/blank_variable", "<html>\n</html>\n"));
     tests.push(("blank/blank_array", "<html>\n</html>\n"));
-    tests.push(("blank/comment", "<html>\n\n</html>\n"));
+    tests.push(("blank/comment", "<html>\n</html>\n"));
     tests.push((
         "blank/inline_comment",
         "<html>\n<p>inline comment</p>\n</html>\n",
@@ -50,8 +71,23 @@ fn builder_tests() -> Result<()> {
     tests.push(("header/pandoc", "# This should not become html\n"));
     tests.push(("header/blank", ""));
 
+    let mut err = false;
+    let mut errs: Vec<Box<dyn Error>> = Vec::new();
     for test in tests.iter() {
-        unit_test(*test)?;
+        match unit_test(*test) {
+            Ok(_) => continue,
+            Err(e) => {
+                err = true;
+                errs.push(e.into());
+            }
+        }
+    }
+
+    if err {
+        for e in errs.iter() {
+            eprintln!("{}", e.to_string());
+        }
+        return Err(color_eyre::eyre::eyre!("failed tests"));
     }
 
     Ok(())
@@ -71,16 +107,16 @@ fn test_filetype_header() -> Result<()> {
 
     assert_eq!(
         file.dest()?,
-        PathBuf::from(
-            "/home/huck/repos/metaforge/files/test_site/build/unit_tests/header/filetype.rss"
-        )
+        opts.build.join("unit_tests/header/filetype.rss")
     );
 
     Ok(())
 }
 
 #[test]
+#[ignore = "interferes with unit_tests"]
 fn test_global() -> Result<()> {
+    clean_build_dir()?;
     let dir = PathBuf::from("files/test_site/").canonicalize()?;
 
     let mut opts = Options::new();

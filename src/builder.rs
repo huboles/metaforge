@@ -1,6 +1,3 @@
-use crate::MetaFile;
-use color_eyre::Result;
-
 mod array;
 mod pattern;
 mod source;
@@ -8,9 +5,13 @@ mod variable;
 
 use pattern::*;
 use source::*;
+use variable::*;
 
 #[cfg(test)]
 mod tests;
+
+use crate::{MetaFile, Scope};
+use color_eyre::Result;
 
 pub fn build_metafile(file: &MetaFile) -> Result<String> {
     if file.header.blank {
@@ -23,7 +24,7 @@ pub fn build_metafile(file: &MetaFile) -> Result<String> {
     let mut base = crate::parse_string(pattern, file.opts)?;
 
     base.merge(file);
-    base.patterns.insert("SOURCE".to_string(), html);
+    base.patterns.insert(Scope::into_global("SOURCE"), html);
 
     let output = metafile_to_string(&base)?;
 

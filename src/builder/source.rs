@@ -1,4 +1,4 @@
-use crate::{MetaFile, Src, Sub};
+use crate::{MetaFile, Src};
 use color_eyre::{eyre::bail, Result};
 
 use super::array::*;
@@ -7,7 +7,7 @@ use super::*;
 pub fn get_source_html(file: &MetaFile) -> Result<String> {
     let string = metafile_to_string(file)?;
 
-    if file.opts.no_pandoc || !file.header.pandoc {
+    if file.opts.no_pandoc || !file.header.pandoc || string == "" {
         return Ok(string);
     }
 
@@ -34,26 +34,21 @@ pub fn metafile_to_string(file: &MetaFile) -> Result<String> {
     let mut arrays = false;
 
     for section in file.source.iter() {
-        match section {
+        let sec = match section {
             // concatenate any char sequences
-            Src::Str(str) => {
-                output.push_str(str);
-            }
+            Src::Str(str) => str.to_string(),
             // expand all variables and recursively expand patterns
-            Src::Sub(sub) => {
-                let expanded = match sub {
-                    Sub::Var(key) => super::variable::get_variable(key, file)?,
-                    Sub::Pat(key) => get_pattern(key, file)?,
-                    Sub::Arr(key) => {
-                        arrays = true;
-                        // comments have already been removed at this point,
-                        // so we use them to mark keys for array substitution
-                        format!("-{{{key}}}")
-                    }
-                };
-                output.push_str(&expanded);
+            Src::Var(key) => get_variable(key, file)?,
+            Src::Pat(key) => get_pattern(key, file)?,
+            Src::Arr(key) => {
+                arrays = true;
+                // comments have already been removed at this point,
+                // so we use them to mark keys for array substitution
+                format!("-{{{key}}}")
             }
-        }
+        };
+
+        output.push_str(&sec);
     }
 
     if arrays {

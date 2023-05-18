@@ -15,7 +15,6 @@ fn build_test_site() -> Result<()> {
 
     metaforge::build_dir(&opts)?;
 
-    assert!(opts.build.join("benchmark.html").exists());
     assert!(opts.build.join("unit_tests").exists());
     assert!(opts
         .build

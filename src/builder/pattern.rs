@@ -1,22 +1,25 @@
-use crate::MetaFile;
+use crate::{MetaFile, Scope};
 use color_eyre::{eyre::bail, Result};
 use std::fs;
 
 pub fn get_pattern(key: &str, file: &MetaFile) -> Result<String> {
     // SOURCE is already expanded in the initial build_metafile() call
     if key == "SOURCE" {
-        if let Some(source) = file.patterns.get("SOURCE") {
+        if let Some(source) = file.patterns.get(&Scope::into_global("SOURCE")) {
             return Ok(source.to_string());
+        } else {
+            return Ok(String::new());
         }
     }
 
-    let mut filename: String;
-    if let Some(name) = file.get_pat(key) {
-        filename = name.to_string();
+    let mut filename = if let Some(name) = file.get_pat(&Scope::into_local(key)) {
+        name.to_string()
+    } else if let Some(name) = file.get_pat(&Scope::into_global(key)) {
+        name.to_string()
     } else {
         // anything not defined should have a default.meta file to fall back to
-        filename = "default".to_string()
-    }
+        "default".to_string()
+    };
 
     // BLANK returns nothing, so no more processing needs to be done
     if filename == "BLANK" {

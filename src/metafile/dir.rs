@@ -19,7 +19,7 @@ impl<'a> DirNode<'a> {
 
         let build_dir = opts.build.join(path.strip_prefix(&opts.source)?);
         if !build_dir.exists() {
-            fs::create_dir(build_dir)?;
+            fs::create_dir_all(build_dir)?;
         }
 
         let files: Vec<MetaFile> = Vec::new();

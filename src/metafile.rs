@@ -1,31 +1,44 @@
 mod dir;
 mod file;
 mod header;
+mod scope;
 
 pub use dir::*;
 pub use file::*;
 pub use header::*;
+pub use scope::*;
 
 #[cfg(test)]
 mod tests;
 
-#[macro_export]
-macro_rules! source (
-    (var($s:expr)) => { crate::Src::Sub(crate::Sub::Var($s.to_string()))};
-    (arr($s:expr)) => { crate::Src::Sub(crate::Sub::Arr($s.to_string()))};
-    (pat($s:expr)) => { crate::Src::Sub(crate::Sub::Pat($s.to_string()))};
-    ($s:expr) => { Src::Str($s.to_string())};
-);
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Src {
     Str(String),
-    Sub(Sub),
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Sub {
     Var(String),
     Arr(String),
     Pat(String),
+}
+
+impl Src {
+    pub fn to_var(var: impl ToString) -> Self {
+        Src::Var(var.to_string())
+    }
+
+    pub fn to_arr(arr: impl ToString) -> Self {
+        Src::Arr(arr.to_string())
+    }
+
+    pub fn to_pat(pat: impl ToString) -> Self {
+        Src::Pat(pat.to_string())
+    }
+
+    pub fn to_str(str: impl ToString) -> Self {
+        Src::Str(str.to_string())
+    }
+
+    pub fn to_string(&self) -> String {
+        match self {
+            Src::Var(x) | Src::Arr(x) | Src::Pat(x) | Src::Str(x) => x.to_string(),
+        }
+    }
 }
