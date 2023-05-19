@@ -1,5 +1,5 @@
-use crate::{build_metafile, Options};
-use color_eyre::{eyre::eyre, Result};
+use crate::{build_metafile, MetaError, Options};
+use eyre::Result;
 use std::{fs, path::PathBuf};
 
 use super::*;
@@ -17,6 +17,7 @@ impl<'a> DirNode<'a> {
     pub fn build(path: PathBuf, opts: &'a Options) -> Result<Self> {
         assert!(path.is_dir() && path.exists());
 
+        // copy over directory structure from source dir
         let build_dir = opts.build.join(path.strip_prefix(&opts.source)?);
         if !build_dir.exists() {
             fs::create_dir_all(build_dir)?;
@@ -65,12 +66,18 @@ impl<'a> DirNode<'a> {
                     fs::write(file.dest()?, str)?;
                 }
                 Err(e) => {
+                    // print a line to stderr about failure but continue with other files
                     if self.opts.force {
-                        // print a line to stderr about failure but continue with other files
                         eprintln!("ignoring {}: {}", file.path.display(), e);
                         continue;
                     } else {
-                        return Err(e.wrap_err(eyre!("{}:", file.path.display())));
+                        // we raise an ignored error to quickly abort any file parsing
+                        if let MetaError::Ignored = e {
+                            continue;
+                        // anything else gets wrapped up and passed up the calling chain
+                        } else {
+                            return Err(e.into());
+                        }
                     }
                 }
             }

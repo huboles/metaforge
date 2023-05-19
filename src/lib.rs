@@ -3,17 +3,19 @@ extern crate pest;
 extern crate pest_derive;
 
 mod builder;
+mod error;
 mod metafile;
 mod options;
 mod parser;
 
 pub use builder::*;
+pub use error::*;
 pub use metafile::*;
 pub use options::*;
 pub use parser::*;
 
 use clap::Parser;
-use color_eyre::Result;
+use eyre::Result;
 use std::fs;
 
 pub fn get_opts() -> Result<Options> {

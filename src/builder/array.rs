@@ -1,5 +1,5 @@
 use crate::{MetaFile, Scope, Src};
-use color_eyre::Result;
+use eyre::Result;
 use std::collections::HashMap;
 
 pub fn expand_arrays(input: String, file: &MetaFile) -> Result<String> {

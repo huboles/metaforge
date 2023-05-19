@@ -1,4 +1,4 @@
-use color_eyre::Result;
+use eyre::Result;
 
 #[test]
 fn build_test_site() -> Result<()> {

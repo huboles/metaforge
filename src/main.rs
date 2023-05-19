@@ -1,6 +1,4 @@
-fn main() -> color_eyre::Result<()> {
-    color_eyre::install()?;
-
+fn main() -> eyre::Result<()> {
     let opts = metaforge::get_opts()?;
 
     if opts.new {

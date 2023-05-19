@@ -1,4 +1,4 @@
-use color_eyre::Result;
+use eyre::Result;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Default)]
@@ -7,6 +7,8 @@ pub struct Options {
     pub source: PathBuf,
     pub build: PathBuf,
     pub pattern: PathBuf,
+    pub input: String,
+    pub output: String,
     pub verbose: u8,
     pub quiet: bool,
     pub force: bool,
@@ -23,6 +25,8 @@ impl Options {
             source: PathBuf::new(),
             build: PathBuf::new(),
             pattern: PathBuf::new(),
+            input: String::default(),
+            output: String::default(),
             verbose: 0,
             quiet: false,
             force: false,
@@ -35,42 +39,54 @@ impl Options {
 }
 
 impl TryFrom<crate::Opts> for Options {
-    type Error = color_eyre::eyre::Error;
+    type Error = eyre::Error;
     fn try_from(value: crate::Opts) -> Result<Self, Self::Error> {
-        let mut options = Options::new();
+        let mut opts = Options::new();
 
-        options.verbose = value.verbose;
-        options.quiet = value.quiet;
-        options.force = value.force;
-        options.undefined = value.undefined;
-        options.clean = value.clean;
-        options.no_pandoc = value.no_pandoc;
-        options.new = value.new;
+        opts.verbose = value.verbose;
+        opts.quiet = value.quiet;
+        opts.force = value.force;
+        opts.undefined = value.undefined;
+        opts.clean = value.clean;
+        opts.no_pandoc = value.no_pandoc;
+        opts.new = value.new;
 
         if let Some(root) = value.root.as_deref() {
-            options.root = PathBuf::from(root).canonicalize()?;
+            opts.root = PathBuf::from(root).canonicalize()?;
         } else {
-            options.root = std::env::current_dir()?;
+            opts.root = std::env::current_dir()?;
         }
 
         if let Some(source) = value.source.as_deref() {
-            options.source = PathBuf::from(source).canonicalize()?;
+            opts.source = PathBuf::from(source).canonicalize()?;
         } else {
-            options.source = options.root.join("source");
+            opts.source = opts.root.join("source");
         }
 
         if let Some(build) = value.build.as_deref() {
-            options.build = PathBuf::from(build).canonicalize()?;
+            opts.build = PathBuf::from(build).canonicalize()?;
         } else {
-            options.build = options.root.join("build");
+            opts.build = opts.root.join("build");
         }
 
         if let Some(pattern) = value.pattern.as_deref() {
-            options.pattern = PathBuf::from(pattern).canonicalize()?;
+            opts.pattern = PathBuf::from(pattern).canonicalize()?;
         } else {
-            options.pattern = options.root.join("pattern");
+            opts.pattern = opts.root.join("pattern");
         }
 
-        Ok(options)
+        if let Some(input) = value.input {
+            opts.input = input;
+        } else {
+            opts.input = String::from("html");
+        }
+
+        if let Some(output) = value.output {
+            opts.output = output;
+        } else {
+            opts.output = String::from("markdown");
+        }
+
+        Ok(opts)
     }
 }

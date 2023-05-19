@@ -1,5 +1,5 @@
-use crate::{parse_string, Options};
-use color_eyre::{eyre::bail, Result};
+use crate::{parse_string, MetaError, Options};
+use eyre::Result;
 use std::{collections::HashMap, path::PathBuf};
 
 use super::*;
@@ -18,9 +18,19 @@ impl<'a> MetaFile<'a> {
     pub fn build(path: PathBuf, opts: &'a Options) -> Result<Self> {
         let str = match std::fs::read_to_string(&path) {
             Ok(str) => str,
-            Err(_) => bail!("{} does not exist", path.display()),
+            Err(_) => {
+                return Err(MetaError::FileNotFound {
+                    path: path.to_string_lossy().to_string(),
+                }
+                .into())
+            }
         };
         let mut metafile = parse_string(str, opts)?;
+
+        if metafile.header.ignore {
+            return Err(MetaError::Ignored.into());
+        }
+
         metafile.path = path;
         Ok(metafile)
     }
@@ -72,7 +82,10 @@ impl<'a> MetaFile<'a> {
                 .unwrap_or_default();
             Ok(name)
         } else {
-            color_eyre::eyre::bail!("could not get name from: {}", self.path.display());
+            Err(MetaError::Name {
+                file: self.path.to_string_lossy().to_string(),
+            }
+            .into())
         }
     }
 

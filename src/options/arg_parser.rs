@@ -21,8 +21,7 @@ pub struct Opts {
     /// Create a new skeleton directory
     #[arg(long, default_value_t = false)]
     pub new: bool,
-    /// Enable extra output.
-    /// Repeated flags give more info
+    /// Enable extra output. Repeated flags give more info
     #[arg(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
     /// Minimal output
@@ -37,8 +36,13 @@ pub struct Opts {
     /// Clean build directory before building site [FALSE]
     #[arg(long, default_value_t = false)]
     pub clean: bool,
-    /// Don't convert markdown to html.
-    /// Runs even if pandoc isn't installed [FALSE]
+    /// Don't call pandoc on source files
     #[arg(long, default_value_t = false)]
     pub no_pandoc: bool,
+    /// Output filetype [html]
+    #[arg(short, long, value_name = "OUTPUT_FILETYPE")]
+    pub output: Option<String>,
+    /// Input filetype [markdown]
+    #[arg(short, long, value_name = "INPUT_FILETYPE")]
+    pub input: Option<String>,
 }

@@ -10,12 +10,14 @@ use variable::*;
 #[cfg(test)]
 mod tests;
 
-use crate::{MetaFile, Scope};
-use color_eyre::Result;
+use crate::{MetaError, MetaFile, Scope};
+use eyre::Result;
 
-pub fn build_metafile(file: &MetaFile) -> Result<String> {
+pub fn build_metafile(file: &MetaFile) -> Result<String, MetaError> {
     if file.header.blank {
         return Ok(String::new());
+    } else if file.header.ignore {
+        return Err(MetaError::Ignored);
     }
 
     let html = get_source_html(file)?;

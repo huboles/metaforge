@@ -1,5 +1,5 @@
 use crate::{build_metafile, MetaFile, Options};
-use color_eyre::{eyre::WrapErr, Result};
+use eyre::{Result, WrapErr};
 use std::{error::Error, fs, path::PathBuf};
 
 fn unit_test(test: (&str, &str)) -> Result<()> {
@@ -23,7 +23,7 @@ fn unit_test(test: (&str, &str)) -> Result<()> {
     if output == test.1 {
         Ok(())
     } else {
-        let err = color_eyre::eyre::eyre!("{} - failed", test.0);
+        let err = eyre::eyre!("{} - failed", test.0);
         eprintln!("{:?}", err);
         eprintln!("\nTEST:\n{}\nOUTPUT:\n{}", test.1, output);
         Err(err)
@@ -87,7 +87,7 @@ fn builder_tests() -> Result<()> {
         for e in errs.iter() {
             eprintln!("{}", e.to_string());
         }
-        return Err(color_eyre::eyre::eyre!("failed tests"));
+        return Err(eyre::eyre!("failed tests"));
     }
 
     Ok(())

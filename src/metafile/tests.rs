@@ -1,5 +1,5 @@
 use crate::Options;
-use color_eyre::Result;
+use eyre::Result;
 use std::path::PathBuf;
 
 use super::*;

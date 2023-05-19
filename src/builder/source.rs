@@ -1,5 +1,5 @@
-use crate::{MetaFile, Src};
-use color_eyre::{eyre::bail, Result};
+use crate::{MetaError, MetaFile, Src};
+use eyre::Result;
 
 use super::array::*;
 use super::*;
@@ -11,17 +11,27 @@ pub fn get_source_html(file: &MetaFile) -> Result<String> {
         return Ok(string);
     }
 
+    let input: pandoc::InputFormat;
+    let output: pandoc::OutputFormat;
+    if let Ok(io) = get_pandoc_io(&file) {
+        input = io.0;
+        output = io.1;
+    } else {
+        // don't run pandoc if a filetype that isn't supported gets requested
+        return Ok(string);
+    }
+
     let mut pandoc = pandoc::Pandoc::new();
     pandoc
         .set_input(pandoc::InputKind::Pipe(string))
         .set_output(pandoc::OutputKind::Pipe)
-        .set_input_format(pandoc::InputFormat::Markdown, vec![])
-        .set_output_format(pandoc::OutputFormat::Html, vec![]);
+        .set_input_format(input, vec![])
+        .set_output_format(output, vec![]);
 
-    if let Ok(pandoc::PandocOutput::ToBuffer(html)) = pandoc.execute() {
-        Ok(html)
+    if let pandoc::PandocOutput::ToBuffer(s) = pandoc.execute()? {
+        Ok(s)
     } else {
-        bail!("pandoc could not write to buffer")
+        Err(MetaError::Pandoc { file: file.name()? }.into())
     }
 }
 
@@ -56,4 +66,49 @@ pub fn metafile_to_string(file: &MetaFile) -> Result<String> {
     } else {
         Ok(output)
     }
+}
+
+fn get_pandoc_io(
+    file: &MetaFile,
+) -> Result<(pandoc::InputFormat, pandoc::OutputFormat), MetaError> {
+    let input: pandoc::InputFormat;
+    let output: pandoc::OutputFormat;
+
+    let mut source_type = "";
+    if !file.header.source.is_empty() {
+        source_type = &file.header.source;
+    } else if !file.opts.input.is_empty() {
+        source_type = &file.opts.input;
+    }
+
+    match source_type {
+        "markdown" => input = pandoc::InputFormat::Markdown,
+        "html" => input = pandoc::InputFormat::Html,
+        "org" => input = pandoc::InputFormat::Org,
+        "json" => input = pandoc::InputFormat::Json,
+        "latex" => input = pandoc::InputFormat::Latex,
+        _ => return Err(MetaError::Filetype.into()),
+    }
+
+    let mut filetype = "";
+    if !file.header.filetype.is_empty() {
+        filetype = &file.header.filetype;
+    } else if !file.opts.input.is_empty() {
+        filetype = &file.opts.output;
+    }
+
+    match filetype {
+        "html" => output = pandoc::OutputFormat::Html,
+        "markdown" => output = pandoc::OutputFormat::Markdown,
+        "man" => output = pandoc::OutputFormat::Man,
+        "txt" => output = pandoc::OutputFormat::Plain,
+        "org" => output = pandoc::OutputFormat::Org,
+        "json" => output = pandoc::OutputFormat::Json,
+        "latex" => output = pandoc::OutputFormat::Latex,
+        "asciidoc" => output = pandoc::OutputFormat::Asciidoc,
+        "pdf" => output = pandoc::OutputFormat::Pdf,
+        _ => return Err(MetaError::Filetype.into()),
+    };
+
+    Ok((input, output))
 }

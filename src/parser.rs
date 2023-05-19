@@ -1,10 +1,3 @@
-use crate::{Header, MetaFile, Options};
-use color_eyre::{eyre::WrapErr, Result};
-use pest::{
-    iterators::{Pair, Pairs},
-    Parser,
-};
-
 mod array;
 mod def_block;
 mod header;
@@ -18,15 +11,19 @@ use source::*;
 #[cfg(test)]
 mod tests;
 
+use crate::{Header, MetaFile, Options};
+use eyre::Result;
+use pest::{
+    iterators::{Pair, Pairs},
+    Parser,
+};
+
 #[derive(Parser)]
 #[grammar = "parser/meta.pest"]
 pub struct MetaParser;
 
 pub fn parse_string(file: String, opts: &Options) -> Result<MetaFile> {
-    let meta_source = MetaParser::parse(Rule::file, &file)
-        .wrap_err("parser error")?
-        .next()
-        .unwrap();
+    let meta_source = MetaParser::parse(Rule::file, &file)?.next().unwrap();
 
     let metafile = parse_file(meta_source, opts);
     Ok(metafile)

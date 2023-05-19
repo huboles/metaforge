@@ -1,5 +1,5 @@
-use crate::{MetaFile, Scope};
-use color_eyre::{eyre::bail, Result};
+use crate::{MetaError, MetaFile, Scope};
+use eyre::Result;
 
 pub fn get_variable(key: &str, file: &MetaFile) -> Result<String> {
     let long_key = file.name()? + "." + key;
@@ -11,8 +11,12 @@ pub fn get_variable(key: &str, file: &MetaFile) -> Result<String> {
         Ok(val.clone())
     } else if let Some(val) = file.get_var(&Scope::into_global(key)) {
         Ok(val.clone())
-    } else if file.opts.undefined {
-        bail!("undefined variable: {}, {}", key.to_string(), &long_key)
+    } else if file.opts.undefined || file.header.panic_undefined {
+        return Err(MetaError::UndefinedExpand {
+            val: key.to_string(),
+            path: file.name()?,
+        }
+        .into());
     } else {
         Ok(String::new())
     }
