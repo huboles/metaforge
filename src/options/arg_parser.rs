@@ -6,43 +6,46 @@ use clap::Parser;
 #[command(about = "A customizable template driven static site generator")]
 #[command(long_about = None)]
 pub struct Opts {
-    /// Root directory [CURRENT_DIR]
+    /// root directory [CURRENT_DIR]
     #[arg(short, long, value_name = "ROOT_DIR")]
     pub root: Option<String>,
-    /// Source file directory [CURRENT_DIR/source]
+    /// source file directory [CURRENT_DIR/source]
     #[arg(short, long, value_name = "SOURCE_DIR")]
     pub source: Option<String>,
-    /// Build directory [CURRENT_DIR/build]
+    /// build directory [current_dir/build]
     #[arg(short, long, value_name = "BUILD_DIR")]
     pub build: Option<String>,
-    /// Pattern directory [CURRENT_DIR/pattern]
+    /// pattern directory [current_dir/pattern]
     #[arg(short, long, value_name = "PATTERN_DIR")]
     pub pattern: Option<String>,
-    /// Create a new skeleton directory
+    /// only build a single file
+    #[arg(short, long, value_name = "FILENAME")]
+    pub file: Option<String>,
+    /// create a new skeleton directory
     #[arg(long, default_value_t = false)]
     pub new: bool,
-    /// Enable extra output. Repeated flags give more info
+    /// enable extra output. Repeated flags give more info
     #[arg(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
-    /// Minimal output
+    /// minimal output
     #[arg(short, long, default_value_t = false)]
     pub quiet: bool,
-    /// Don't stop on file failure [FALSE]
+    /// don't stop on file failure [FALSE]
     #[arg(long, default_value_t = false)]
     pub force: bool,
-    /// Stop on undefined variables and arrays [FALSE]
+    /// stop on undefined variables and arrays [FALSE]
     #[arg(long, default_value_t = false)]
     pub undefined: bool,
-    /// Clean build directory before building site [FALSE]
+    /// clean build directory before building site [FALSE]
     #[arg(long, default_value_t = false)]
     pub clean: bool,
-    /// Don't call pandoc on source files
+    /// don't call pandoc on source files
     #[arg(long, default_value_t = false)]
     pub no_pandoc: bool,
-    /// Output filetype [html]
+    /// output filetype [html]
     #[arg(short, long, value_name = "OUTPUT_FILETYPE")]
     pub output: Option<String>,
-    /// Input filetype [markdown]
+    /// input filetype [markdown]
     #[arg(short, long, value_name = "INPUT_FILETYPE")]
     pub input: Option<String>,
 }

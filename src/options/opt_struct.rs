@@ -7,6 +7,7 @@ pub struct Options {
     pub source: PathBuf,
     pub build: PathBuf,
     pub pattern: PathBuf,
+    pub file: Option<PathBuf>,
     pub input: String,
     pub output: String,
     pub verbose: u8,
@@ -25,6 +26,7 @@ impl Options {
             source: PathBuf::new(),
             build: PathBuf::new(),
             pattern: PathBuf::new(),
+            file: None,
             input: String::default(),
             output: String::default(),
             verbose: 0,
@@ -73,6 +75,10 @@ impl TryFrom<crate::Opts> for Options {
             opts.pattern = PathBuf::from(pattern).canonicalize()?;
         } else {
             opts.pattern = opts.root.join("pattern");
+        }
+
+        if let Some(file) = value.file.as_deref() {
+            opts.file = Some(PathBuf::from(file).canonicalize()?);
         }
 
         if let Some(input) = value.input {

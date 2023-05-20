@@ -23,16 +23,16 @@ pub fn get_opts() -> Result<Options> {
 
     let exists = opts.build.exists();
     if exists && opts.clean {
-        std::fs::remove_dir_all(&opts.build)?;
-        std::fs::create_dir(&opts.build)?;
+        fs::remove_dir_all(&opts.build)?;
+        fs::create_dir(&opts.build)?;
     } else if !exists {
-        std::fs::create_dir(&opts.build)?;
+        fs::create_dir(&opts.build)?;
     }
 
     Ok(opts)
 }
 
-pub fn build_dir(opts: &Options) -> Result<()> {
+pub fn build_site(opts: &Options) -> Result<()> {
     let mut source = DirNode::build(opts.source.clone(), opts)?;
 
     let global_init = MetaFile::new(opts);
@@ -40,6 +40,20 @@ pub fn build_dir(opts: &Options) -> Result<()> {
     source.map(&global_init)?;
 
     source.build_dir()
+}
+
+pub fn single_file(opts: &Options) -> Result<String> {
+    let path = opts.file.as_ref().ok_or(MetaError::Unknown)?;
+    let source = match fs::read_to_string(&path) {
+        Ok(str) => Ok(str),
+        Err(_) => Err(eyre::Error::from(MetaError::FileNotFound {
+            path: path.to_string_lossy().to_string(),
+        })),
+    }?;
+
+    let file = parse_string(source, opts)?;
+
+    Ok(build_metafile(&file)?)
 }
 
 pub fn new_site(opts: &Options) -> Result<()> {

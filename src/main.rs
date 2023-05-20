@@ -2,8 +2,14 @@ fn main() -> eyre::Result<()> {
     let opts = metaforge::get_opts()?;
 
     if opts.new {
-        metaforge::new_site(&opts)
+        return metaforge::new_site(&opts);
+    }
+
+    if let Some(_) = &opts.file {
+        let str = metaforge::single_file(&opts)?;
+        println!("{str}");
+        Ok(())
     } else {
-        metaforge::build_dir(&opts)
+        return metaforge::build_site(&opts);
     }
 }
