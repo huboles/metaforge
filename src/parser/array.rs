@@ -1,19 +1,20 @@
-use crate::{Rule, Scope};
+use crate::{MetaError, Rule, Scope};
+use eyre::Result;
 use pest::iterators::{Pair, Pairs};
 use std::collections::HashMap;
 
-pub fn parse_array_defs(pairs: Pairs<Rule>) -> HashMap<Scope, Vec<String>> {
+pub fn parse_array_defs(pairs: Pairs<Rule>) -> Result<HashMap<Scope, Vec<String>>> {
     let mut map = HashMap::new();
     for pair in pairs {
         if Rule::assign == pair.as_rule() {
-            let (key, val) = parse_assign_array(pair);
+            let (key, val) = parse_assign_array(pair)?;
             map.insert(key, val);
         }
     }
-    map
+    Ok(map)
 }
 
-fn parse_assign_array(pair: Pair<Rule>) -> (Scope, Vec<String>) {
+fn parse_assign_array(pair: Pair<Rule>) -> Result<(Scope, Vec<String>)> {
     let mut key = "";
     let mut val = Vec::default();
     let mut global = true;
@@ -29,14 +30,19 @@ fn parse_assign_array(pair: Pair<Rule>) -> (Scope, Vec<String>) {
             }
             Rule::key => key = pair.as_str(),
             Rule::value => val = parse_array(pair.into_inner()),
-            _ => unreachable!(),
+            _ => {
+                return Err(MetaError::UnreachableRule {
+                    input: pair.to_string(),
+                }
+                .into())
+            }
         }
     }
 
     if global {
-        (Scope::into_global(key), val)
+        Ok((Scope::into_global(key), val))
     } else {
-        (Scope::into_local(key), val)
+        Ok((Scope::into_local(key), val))
     }
 }
 

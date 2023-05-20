@@ -23,6 +23,8 @@ pub enum MetaError {
     UndefinedExpand { val: String, path: String },
     #[error("undefined call to default.meta: {pattern}\n\tin {path}")]
     UndefinedDefault { pattern: String, path: String },
+    #[error("the parser cannot resolve this input: {input}")]
+    UnreachableRule { input: String },
     #[error(transparent)]
     MetaError(#[from] Box<MetaError>),
     #[error(transparent)]
