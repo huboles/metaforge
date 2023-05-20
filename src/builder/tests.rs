@@ -84,6 +84,14 @@ fn builder_tests() -> Result<()> {
         }
     }
 
+    if let Err(e) = test_filetype_header() {
+        errs.push(e.into());
+    }
+
+    if let Err(e) = test_global() {
+        errs.push(e.into());
+    }
+
     if err {
         for e in errs.iter() {
             eprintln!("{}", e);
@@ -94,7 +102,6 @@ fn builder_tests() -> Result<()> {
     Ok(())
 }
 
-#[test]
 fn test_filetype_header() -> Result<()> {
     let dir = PathBuf::from("files/test_site").canonicalize()?;
 
@@ -106,18 +113,21 @@ fn test_filetype_header() -> Result<()> {
     let path = opts.source.join("unit_tests/header/filetype.meta");
     let file = MetaFile::build(path, &opts)?;
 
-    assert_eq!(
-        file.dest()?,
-        opts.build.join("unit_tests/header/filetype.rss")
-    );
-
-    Ok(())
+    if file.dest()? == opts.build.join("unit_tests/header/filetype.rss") {
+        Ok(())
+    } else {
+        let err = eyre::eyre!("filetype - failed");
+        eprintln!("{:?}", err);
+        eprintln!(
+            "\nTEST:\n{}\nOUTPUT:\n{}",
+            opts.build.join("unit_tests/header/filetype.rss").display(),
+            file.dest()?.display()
+        );
+        Err(err)
+    }
 }
 
-#[test]
-#[ignore = "interferes with unit_tests"]
 fn test_global() -> Result<()> {
-    clean_build_dir()?;
     let dir = PathBuf::from("files/test_site/").canonicalize()?;
 
     let mut opts = Options::new();
@@ -132,12 +142,12 @@ fn test_global() -> Result<()> {
     dir_node.build_dir()?;
 
     assert_eq!(
-        std::fs::read_to_string(dir.join("build/unit_tests/global/pattern.html"))?,
+        fs::read_to_string(dir.join("build/unit_tests/global/pattern.html"))?,
         "<p>GOOD GOOD</p>\n"
     );
 
     assert_eq!(
-        std::fs::read_to_string(dir.join("build/unit_tests/global/variable.html"))?,
+        fs::read_to_string(dir.join("build/unit_tests/global/variable.html"))?,
         "<p>GOODGOOD</p>\n"
     );
 

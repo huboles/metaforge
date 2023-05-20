@@ -1,0 +1,8 @@
+${ var = 'bad' }
+
+&{
+    body = DEFAULT
+    test = 'scope'
+}
+
+${var}
