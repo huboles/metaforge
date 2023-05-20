@@ -44,7 +44,7 @@ pub fn build_site(opts: &Options) -> Result<()> {
 
 pub fn single_file(opts: &Options) -> Result<String> {
     let path = opts.file.as_ref().ok_or(MetaError::Unknown)?;
-    let source = match fs::read_to_string(&path) {
+    let source = match fs::read_to_string(path) {
         Ok(str) => Ok(str),
         Err(_) => Err(eyre::Error::from(MetaError::FileNotFound {
             path: path.to_string_lossy().to_string(),

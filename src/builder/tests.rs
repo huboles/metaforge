@@ -47,29 +47,30 @@ fn clean_build_dir() -> Result<()> {
 fn builder_tests() -> Result<()> {
     clean_build_dir()?;
 
-    let mut tests: Vec<(&str, &str)> = Vec::new();
-    tests.push(("find_dest", "<html>\n</html>\n"));
-    tests.push(("blank/blank_pattern", ""));
-    tests.push(("blank/blank_variable", "<html>\n</html>\n"));
-    tests.push(("blank/blank_array", "<html>\n</html>\n"));
-    tests.push(("blank/comment", "<html>\n</html>\n"));
-    tests.push((
-        "blank/inline_comment",
-        "<html>\n<p>inline comment</p>\n</html>\n",
-    ));
-    tests.push((
-        "expand/variable_in_source",
-        "<html>\n<p>GOOD</p>\n</html>\n",
-    ));
-    tests.push(("expand/variable_in_pattern", "<html>\nGOOD</html>\n"));
-    tests.push(("expand/array_in_source", "<html>\n<p>12345</p>\n</html>\n"));
-    tests.push(("expand/array_in_pattern", "<html>\n12345</html>\n"));
-    tests.push(("expand/pattern_in_source", "<p>GOOD</p>\n"));
-    tests.push(("expand/pattern_in_pattern", "<html>\nGOOD\nGOOD\n</html>\n"));
-    tests.push(("override/variable", "<html>\n<p>GOOD</p>\n</html>\n"));
-    tests.push(("override/pattern", "<html>\nGOOD\nGOOD\n</html>\n"));
-    tests.push(("header/pandoc", "# This should not become html\n"));
-    tests.push(("header/blank", ""));
+    let tests: Vec<(&str, &str)> = vec![
+        ("find_dest", "<html>\n</html>\n"),
+        ("blank/blank_pattern", ""),
+        ("blank/blank_variable", "<html>\n</html>\n"),
+        ("blank/blank_array", "<html>\n</html>\n"),
+        ("blank/comment", "<html>\n</html>\n"),
+        (
+            "blank/inline_comment",
+            "<html>\n<p>inline comment</p>\n</html>\n",
+        ),
+        (
+            "expand/variable_in_source",
+            "<html>\n<p>GOOD</p>\n</html>\n",
+        ),
+        ("expand/variable_in_pattern", "<html>\nGOOD</html>\n"),
+        ("expand/array_in_source", "<html>\n<p>12345</p>\n</html>\n"),
+        ("expand/array_in_pattern", "<html>\n12345</html>\n"),
+        ("expand/pattern_in_source", "<p>GOOD</p>\n"),
+        ("expand/pattern_in_pattern", "<html>\nGOOD\nGOOD\n</html>\n"),
+        ("override/variable", "<html>\n<p>GOOD</p>\n</html>\n"),
+        ("override/pattern", "<html>\nGOOD\nGOOD\n</html>\n"),
+        ("header/pandoc", "# This should not become html\n"),
+        ("header/blank", ""),
+    ];
 
     let mut err = false;
     let mut errs: Vec<Box<dyn Error>> = Vec::new();
@@ -85,7 +86,7 @@ fn builder_tests() -> Result<()> {
 
     if err {
         for e in errs.iter() {
-            eprintln!("{}", e.to_string());
+            eprintln!("{}", e);
         }
         return Err(eyre::eyre!("failed tests"));
     }

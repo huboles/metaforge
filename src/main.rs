@@ -5,11 +5,11 @@ fn main() -> eyre::Result<()> {
         return metaforge::new_site(&opts);
     }
 
-    if let Some(_) = &opts.file {
+    if opts.file.is_some() {
         let str = metaforge::single_file(&opts)?;
         println!("{str}");
         Ok(())
     } else {
-        return metaforge::build_site(&opts);
+        metaforge::build_site(&opts)
     }
 }

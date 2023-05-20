@@ -35,8 +35,10 @@ impl Src {
     pub fn to_str(str: impl ToString) -> Self {
         Src::Str(str.to_string())
     }
+}
 
-    pub fn to_string(&self) -> String {
+impl ToString for Src {
+    fn to_string(&self) -> String {
         match self {
             Src::Var(x) | Src::Arr(x) | Src::Pat(x) | Src::Str(x) => x.to_string(),
         }

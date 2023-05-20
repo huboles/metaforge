@@ -3,12 +3,16 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum MetaError {
-    #[error("unknown error")]
+    #[error("unknown internal error")]
     Unknown,
-    #[error("ignored")]
+    #[error("internal break switch")]
     Ignored,
-    #[error("filetype")]
+    #[error("internal filetype error")]
     Filetype,
+    #[error("internal array error")]
+    Array,
+    #[error("mismatched array sizes in {path}")]
+    UnequalArrays { path: String },
     #[error("could not find {path}")]
     FileNotFound { path: String },
     #[error("could not determine name from {file}")]

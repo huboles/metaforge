@@ -102,33 +102,18 @@ impl<'a> MetaFile<'a> {
     }
 
     pub fn var_defined(&self, key: &str) -> bool {
-        if self.variables.contains_key(&Scope::into_local(key))
+        self.variables.contains_key(&Scope::into_local(key))
             || self.variables.contains_key(&Scope::into_global(key))
-        {
-            true
-        } else {
-            false
-        }
     }
 
     pub fn arr_defined(&self, key: &str) -> bool {
-        if self.arrays.contains_key(&Scope::into_local(key))
+        self.arrays.contains_key(&Scope::into_local(key))
             || self.arrays.contains_key(&Scope::into_global(key))
-        {
-            true
-        } else {
-            false
-        }
     }
 
     pub fn pat_defined(&self, key: &str) -> bool {
-        if self.patterns.contains_key(&Scope::into_local(key))
+        self.patterns.contains_key(&Scope::into_local(key))
             || self.patterns.contains_key(&Scope::into_global(key))
-        {
-            true
-        } else {
-            false
-        }
     }
 
     pub fn merge(&mut self, other: &Self) {

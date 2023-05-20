@@ -72,7 +72,7 @@ impl<'a> DirNode<'a> {
                         continue;
                     } else {
                         // we raise an ignored error to quickly abort any file parsing
-                        if let MetaError::Ignored = e {
+                        if let MetaError::Ignored = *e {
                             continue;
                         // anything else gets wrapped up and passed up the calling chain
                         } else {
