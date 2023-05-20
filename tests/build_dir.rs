@@ -13,7 +13,7 @@ fn build_test_site() -> Result<()> {
     opts.pattern = dir.join("pattern");
     opts.clean = true;
 
-    metaforge::build_dir(&opts)?;
+    metaforge::build_site(&opts)?;
 
     assert!(opts.build.join("unit_tests").exists());
     assert!(opts

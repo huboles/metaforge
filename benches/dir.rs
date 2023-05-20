@@ -18,7 +18,7 @@ pub fn build_dir(c: &mut Criterion) {
         }
 
         std::fs::create_dir(&opts.build).expect("create build dir");
-        b.iter(|| metaforge::build_dir(black_box(&opts)).unwrap())
+        b.iter(|| metaforge::build_site(black_box(&opts)).unwrap())
     });
 }
 
