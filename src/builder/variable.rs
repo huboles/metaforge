@@ -1,7 +1,12 @@
-use crate::{MetaError, MetaFile, Scope};
+use crate::{log, MetaError, MetaFile, Scope};
 use eyre::Result;
 
 pub fn get_variable(key: &str, file: &MetaFile) -> Result<String> {
+    log!(
+        file.opts,
+        format!("substituting {key} in {}", file.path.display()),
+        2
+    );
     let long_key = file.name()? + "." + key;
     if let Some(val) = file.get_var(&Scope::into_local(&long_key)) {
         Ok(val.clone())

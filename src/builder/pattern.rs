@@ -1,8 +1,9 @@
-use crate::{MetaError, MetaFile, Scope};
+use crate::{log, MetaError, MetaFile, Scope};
 use eyre::Result;
 use std::fs;
 
 pub fn get_pattern(key: &str, file: &MetaFile) -> Result<String> {
+    log!(file.opts, format!("expanding {key}"), 2);
     // SOURCE is already expanded in the initial build_metafile() call
     if key == "SOURCE" {
         if let Some(source) = file.patterns.get(&Scope::into_global("SOURCE")) {

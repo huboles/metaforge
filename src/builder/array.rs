@@ -1,8 +1,14 @@
-use crate::{MetaError, MetaFile, Scope, Src};
+use crate::{log, MetaError, MetaFile, Scope, Src};
 use eyre::Result;
 use std::collections::HashMap;
 
 pub fn expand_arrays(input: String, file: &MetaFile) -> Result<String> {
+    log!(
+        file.opts,
+        format!("expanding arrays in {}", file.path.display()),
+        2
+    );
+
     let map: HashMap<String, &[String]> = file
         .source
         .iter()

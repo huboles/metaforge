@@ -1,4 +1,4 @@
-use crate::{MetaError, MetaFile, Src};
+use crate::{log, MetaError, MetaFile, Src};
 use eyre::Result;
 use pandoc::{InputFormat, InputKind, OutputFormat, OutputKind, Pandoc};
 
@@ -21,6 +21,8 @@ pub fn get_source_html(file: &MetaFile) -> Result<String> {
         // don't run pandoc if a filetype that isn't supported gets requested
         return Ok(string);
     }
+
+    log!(file.opts, "calling pandoc", 3);
 
     let mut pandoc = Pandoc::new();
     pandoc

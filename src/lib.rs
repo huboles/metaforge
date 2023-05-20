@@ -21,6 +21,8 @@ use std::fs;
 pub fn get_opts() -> Result<Options> {
     let opts = Options::try_from(Opts::parse())?;
 
+    log!(&opts, "getting options", 3);
+
     let exists = opts.build.exists();
     if exists && opts.clean {
         fs::remove_dir_all(&opts.build)?;
@@ -33,17 +35,27 @@ pub fn get_opts() -> Result<Options> {
 }
 
 pub fn build_site(opts: &Options) -> Result<()> {
-    let mut source = DirNode::build(opts.source.clone(), opts)?;
+    log!(
+        opts,
+        format!("building site in {}", opts.build.display()),
+        1
+    );
 
+    let mut source = DirNode::build(opts.source.clone(), opts)?;
     let global_init = MetaFile::new(opts);
 
     source.map(&global_init)?;
-
     source.build_dir()
 }
 
 pub fn single_file(opts: &Options) -> Result<String> {
     let path = opts.file.as_ref().ok_or(MetaError::Unknown)?;
+    log!(
+        opts,
+        format!("building file {}", opts.file.as_ref().unwrap().display()),
+        1
+    );
+
     let source = match fs::read_to_string(path) {
         Ok(str) => Ok(str),
         Err(_) => Err(eyre::Error::from(MetaError::FileNotFound {
@@ -57,6 +69,11 @@ pub fn single_file(opts: &Options) -> Result<String> {
 }
 
 pub fn new_site(opts: &Options) -> Result<()> {
+    log!(
+        &opts,
+        format!("building new site skeleton in {}", opts.root.display()),
+        1
+    );
     macro_rules! exist_or_build(
         ($p:expr) => {
             if !$p.exists() {
