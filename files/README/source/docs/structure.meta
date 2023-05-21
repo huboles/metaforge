@@ -1,0 +1,44 @@
+## file locations
+metaforge parses files with the **.meta** extension.
+
+files in the pattern directory are available for file expansion.
+**default.meta** files are fallback files if the pattern directory
+gets called without a defined value.
+
+the structure of the source directory gets mirrored to the build
+directory as the site is build, with any **.meta** files
+becoming **.html** files, except **default.meta** files,
+which define default values for a directory and its children.
+
+the source section of files in the source directory can be written
+in markdown and will converted to html.
+
+files from the pattern directory the should generally contain html snippets,
+but can contain anything that you'd like to substitute.
+
+required directories are:
+- source - site structure and contents
+- pattern - patterns for expansion
+- pattern/base - gets expanded to start building each pattern.
+
+the build directory doesn't need to exist, as metaforge will create a
+new one if it's missing
+
+a new skeleton site can be built in the given root directory by passing
+the ***--new*** flag to metaforge,
+
+## skeleton structure
+    ./
+    L pattern/
+    |   L base/
+    |   |    L default.meta
+    |   L body/
+    |   |    L default.meta
+    |   L head/
+    |   |    L default.meta
+    |   L foot/
+    |        L default.meta
+    L source/
+    |   L hello_world.meta
+    L build/
+        L hello_world.html

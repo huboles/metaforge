@@ -24,7 +24,7 @@ pub struct Opts {
     #[arg(short, long, value_name = "FILENAME")]
     pub file: Option<String>,
     /// parallel processing
-    #[arg(short, long, default_value_t = false)]
+    #[arg(long, default_value_t = false)]
     pub parallel: bool,
     /// create a new skeleton directory
     #[arg(long, default_value_t = false)]

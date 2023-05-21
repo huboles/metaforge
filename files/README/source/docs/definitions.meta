@@ -1,0 +1,84 @@
+${
+    title = 'definitions'
+    description = 'definining variables and patterns'
+}
+
+## rules
+
+definition blocks are allowed in all files, but have to be before any source
+text, and after any header settings (which are a special type of definition block)
+
+a block is a sigil for the definition type, followed by braces that
+surround assignment statements
+
+assignments are identifiers, followed by an equals sign, then a value
+
+definition blocks can have spaces and new lines arbitrarily inserted
+between each component, and support multiple assignments per block
+
+## identifiers
+
+identifiers can contain alphanumeric ascii values as well as _ and separating dots .
+
+variable identifiers without dots are available to any pattern called by the file
+
+array identifiers without dots are available only to the pattern they are defined in
+
+variable and array identifiers with separating dots use the final item
+as the variable, and the preceding items are expanded like a pattern identifier to make
+a mask on the definition. the definition is only valid in that pattern directory (not children), otherwise it is undefined.
+
+pattern identifiers expand to a directory of files in the pattern
+directory by replacing .'s with /'s, appending necessary file extensions when called.
+the value selects a single file in the directory as the desired pattern.
+
+an identifier preceded by an star (*) will be marked as local to the file it is defined in.
+entire blocks can be marked as local by preceding them with a star. if necessary, a single
+assignment in a local block can be made global again by prefixing it with an exclamation mark (!).
+
+## values
+
+values can be a double or single quoted string, if defining an array,
+a value is a bracket surrounded, comma separated list of strings
+
+all values can optionally be assigned as BLANK, which expands to nothing
+
+patterns can also be assigned as DEFAULT, for overriding globally defined patterns.
+
+## scope
+
+any value defined in a file called **default.meta** in the source
+directory is defined in all files in the current and child directories.
+
+values defined normally are defined for any file called in the chain of expansion.
+this value can be overridden, either for a single file in the chain by prefixing the
+definition with a star *, or for any files further down the chain, by defining a new
+value normally.
+
+## examples
+
+    ${var}
+        *foo = 'bar' ${com} foo is only equal to bar in this file }
+        bar.baz = BLANK ${com} this only applies to pattern/bar/*.meta }
+        baz = quux ${com} baz is equal to quux in every file called during
+                      expansion, unless it gets overridden }
+    }
+
+    ${arr}
+        bar = ['foo','bar']
+        baz.blank = BLANK ${com} this inserts nothing }
+
+        foo.bar = [ 'foobar', 'foobaz' ]
+        ${com} this will copy pattern/foo/*.meta twice, inserting 'foobar and 'foobaz'
+           once each at the location of @{bar} }
+    }
+
+    ${com} all of these patterns are only defined for this file }
+    *${pat}
+        foo.bar = BLANK
+        bar.default = DEFAULT
+
+        !baz = "bar"
+        ${com} except for this definition, which
+           continues down the expansion chain }
+    }

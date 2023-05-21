@@ -1,0 +1,106 @@
+${
+    title = 'expansions'
+    description = 'expanding variables and patterns in a file'
+}
+
+## syntax
+
+a sigil followed by braces, with an identifier inside.
+
+happens inside the source, expanding to the relevant value
+when the file is built
+
+### examples
+
+    ...this is a string with a ${var}variable} to be expanded...
+
+    ...this line has a ${pat}pattern} inside of it...
+
+    ...this ${arr}array} will be replaced...
+
+## behavior
+
+all expansions are decided by the value defined for the identifier,
+following inheritance rules, and directory masking for variables and arrays.
+
+### variables
+
+variables are simply replaced by the defined value, with no other substitution.
+they're useful for small things that are frequently changed in a pattern, but
+don't need any extra expansion.
+
+#### example
+
+    definition:
+        ${var}
+            baz = "foo"
+            bar.baz = "quux"
+            quux = BLANK
+        }
+
+    pattern [foo]: <p>${var}baz} ${var}quux}</p>
+
+    expanded [foo]: <p>foo </p>
+
+    pattern [bar]: <p>${var}baz} ${var}quux}</p>
+
+    expanded [bar]: <p>quux </p>
+
+### arrays
+
+arrays are similar to variables, but are closely related to the masking pattern.
+after all expansions happen in a pattern, each defined array maps its contents
+across copies of the pattern, resulting in a easy method for duplicating repetitive
+parts of patterns.
+
+#### example
+
+    pattern [foo]: <p>${arr}bar}</p>
+
+    defintion: ${arr} foo.bar = ['foo', 'bar', 'baz'] }
+
+    expands to: <p>foo</p><p>bar</p><p>baz</p>
+
+it's generally best to keep arrays inside small self-contained
+patterns, otherwise unwanted parts of the file may be duplicated.
+
+### patterns
+
+patterns expand by looking for files using the pattern directory as a root.
+the identifier becomes a directory by changing .'s to /'s.
+if a defined value exists, it's used as the filename, with a **.meta**
+extension added automatically. if no value is defined, metaforge next looks
+for files with the exact name in the identifier, again substituting .'s to /'s.
+if a file still hasn't been found, or the pattern has most recently been defined
+as ***DEFAULT***, then **default.meta** is selected from the identified directory.
+
+#### example search
+    foo.bar => pattern/foo/bar/*.meta => pattern/foo/bar.meta => pattern/foo/bar/default.meta
+
+if no file is found metaforge will either insert an empty string, or panic depending
+on the flags and header settings in effect. a pattern defined as ***BLANK*** will always
+expand to a blank string without errors.
+
+if the identifier in the pattern is ***SOURCE***, the pattern will expand using the
+processed source from the original calling file in the source directory. this
+goes through an extra step right before insertion, calling pandoc on the file
+to convert between the chosen filetypes.
+
+once the filename is determined, it is parsed and expands any contained variables,
+arrays and patterns. if it is a ***SOURCE*** pattern, it is converted to html after
+the expansions. the expanded pattern is then inserted in place of the calling identifier.
+
+## building
+
+as each file is built, the first thing expanded is the relevant **base/[FILE].meta** pattern,
+so it is required to have at least a **default.meta** in the **pattern/base** directory
+
+### example
+
+    pattern [base]: <html>${pat}body}</html>
+
+    pattern [body]: <body>${pat}SOURCE}</body>
+
+    source [SOURCE]: foo *bar* baz
+
+    expanded [base] : <html><body><p>foo <italic>bar</italic> baz</p></body></html>

@@ -1,0 +1,63 @@
+${
+    title = 'flags'
+    description = 'available flags for running metaforge'
+}
+
+## available flags
+
+    -r, --root <ROOT_DIR>
+            root directory, contains source, pattern and build directories
+            defaults to current working directory
+    -s, --source <SOURCE_DIR>
+            source file directory, contains directory structure and .meta files for completed site
+            defaults to [root_dir]/source
+    -b, --build <BUILD_DIR>
+            build directory, directory where the final site gets built
+            defaults to [root_dir]/build
+    -p, --pattern <PATTERN_DIR>
+            pattern directory, contains .meta files that are available for expansion
+            defaults to [root_dir]/pattern
+    -f, --file <FILENAME>
+            builds a single file and outputs it to stdout
+    -v, --verbose
+            enable extra output. repeated flags give more info
+                v   => list source files/directories being created
+                vv  => list expansions and substitutions
+                vvv => full debug information (function calls, interior parameters)
+    -q, --quiet
+            minimal output
+    -o, --output <OUTPUT_FILETYPE>
+            output filetype, defaults to html
+            options:
+                - html
+                - markdown
+                - json
+                - latex
+                - man
+                - txt
+                - asciidoc
+                - pdf
+    -i, --input <INPUT_FILETYPE>
+            input filetype, defaults to markdown
+            options:
+                - markdown
+                - html
+                - json
+                - latex
+                - org
+    -h, --help
+            print a brief help page
+    -V, --version
+            print version
+        --clean
+            clean build directory before building site,
+            will remove anything currently in build directory
+        --new
+            create a new skeleton directory in the root dir
+        --force
+            don't stop building site if a single file fails
+        --undefined
+            panics and stops building site if any undefined variables are encountered
+        --no-pandoc
+            don't call pandoc on source files
+            allows metaforge to run without pandoc installed
