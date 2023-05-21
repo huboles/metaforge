@@ -24,7 +24,7 @@ pub fn build_dir(c: &mut Criterion) {
 
 criterion_group! {
     name = benches;
-    config = Criterion::default().sample_size(10).measurement_time(core::time::Duration::from_secs(135));
+    config = Criterion::default().sample_size(10).measurement_time(core::time::Duration::from_secs(140));
     targets =  build_dir
 }
 

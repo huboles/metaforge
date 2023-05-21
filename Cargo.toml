@@ -17,3 +17,11 @@ criterion = "0.4"
 [[bench]]
 name = "dir"
 harness = false
+
+[[bench]]
+name = "file"
+harness = false
+
+[[bench]]
+name = "pandoc"
+harness = false
