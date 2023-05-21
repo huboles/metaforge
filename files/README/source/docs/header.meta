@@ -9,14 +9,15 @@ define settings for the parser, allowing better control over how a single file g
 processed.
 
 header blocks works similarly as any other definition block, with keys consisting
-of pre-defined keywords, and values are booleans (unquoted) or strings, and the ***DEFAULT***
-option for overriding.
+of pre-defined keywords, and values consisting of booleans (unquoted) or strings,
+as well as ***DEFAULT*** option for overriding.
 
 the header block must be the first block in a file, as it determines how the parser
 reads and constructs the rest of the file
 
 in a **default.meta** file, any keys preceded by an exclamation mark (!) get applied
-as global header settings, following the same inheritance rules as other global definitions.
+as header settings for the entire directory and children, following the same inheritance
+rules as other definitions.
 
 prefixing a definition block with an exclamation mark makes the entire block globally defined.
 inside, you can mark individual assignments as local by preceding them with a star (*) as in
@@ -25,22 +26,22 @@ normal definition blocks.
 ### example
 
     ${head}
-        filetype = 'txt'
-        !pandoc = 'false'
+       filetype = 'txt'
+       !pandoc = 'false'
     }
 
 ## keywords
 
 ### any
 
-- blank = BOOL - stops parsing and returns an empty string
-- panic_default = BOOL - if true, panics on an undefined default pattern
-- panic_undefined = BOOL - if true, panics on an undefined variable or array
-- equal_arrays = BOOL - if true, panics if arrays in the same pattern have different sizes
+- blank = **BOOL** - if true, stops parsing and returns an empty string
+- panic_default = **BOOL** - if true, panics on an undefined default pattern
+- panic_undefined = **BOOL** - if true, panics on an undefined variable or array
+- equal_arrays = **BOOL** - if true, panics if arrays in the same pattern have different sizes
 
 ### source
 
-- ignore = BOOL - stops parsing and skips this file, useful for ignoring directories with scoped definitions
-- filetype = STRING - change the filetype of the output file
-- source = STRING - change the the filetype of the source file
-- pandoc = BOOL - toggles if pandoc is ran on this file to convert between filetypes
+- ignore = **BOOL** - stops parsing and skips this file, useful for ignoring directories with scoped definitions
+- source = **STRING** - change the the filetype of the source file
+- filetype = **STRING** - change the filetype of the output file
+- pandoc = **BOOL** - toggles if pandoc is ran on this file to convert between filetypes

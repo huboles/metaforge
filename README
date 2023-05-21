@@ -1,0 +1,13 @@
+metaforge - v0.1.1
+
+a pattern driven static site generator for extensible snippet insertion.
+
+the full documentation is available in this repository under the **files/README/source/docs**
+directory. it's currently setup as a working example of a metaforge site, so you can poke around
+and see one way a site can be setup.
+
+building documentation:
+    $ cargo test -- --ignored readme
+
+this command can be run as many times as needed to regenerate the documentation, and is
+reccomended after upgrading to a new version to see what's changed.

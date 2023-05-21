@@ -1,3 +1,8 @@
+${
+    title = 'structure'
+    description = 'directory structure for metaforge'
+}
+
 ## file locations
 metaforge parses files with the **.meta** extension.
 
@@ -17,9 +22,9 @@ files from the pattern directory the should generally contain html snippets,
 but can contain anything that you'd like to substitute.
 
 required directories are:
-- source - site structure and contents
-- pattern - patterns for expansion
-- pattern/base - gets expanded to start building each pattern.
+- source (site structure and contents)
+- pattern (patterns for expansion)
+- pattern/base (gets expanded to start building each pattern)
 
 the build directory doesn't need to exist, as metaforge will create a
 new one if it's missing

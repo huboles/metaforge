@@ -1,6 +1,6 @@
 <body>
-    <a href="../index.html">home</a>
-    <h1>${title}</h1>
+    <a href="${home}">home</a>
+    <div><h1><strong>${title}</strong> - <em>${version}</em></h1></div>
     <p>${description}</p>
     <article>
         &{SOURCE}

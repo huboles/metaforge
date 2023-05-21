@@ -17,8 +17,8 @@ a sigil followed by assignment operations enclosed by brackets
     ${var} foo = 'bar' }
 
     ${pat}
-        foo.bar = "baz"
-        bar.baz = 'foo'
+       foo.bar = "baz"
+       bar.baz = 'foo'
     }
 
 ## strings
@@ -49,7 +49,7 @@ whitespace and newlines between list values are accepted
     ]
 
 ## comments
-a comment sigil \- followed by a comment in braces
+a comment sigil \- followed by a comment in braces.
 the only characters not allowed are braces.
 
 comments get removed during the first pass through of parsing, and can occur
@@ -59,9 +59,8 @@ anywhere in or across a line.
     ${com} foobar }
 
     ${com}
-        foobar
-        foobaz
-    }
+       foobar
+       foobaz }
 
 ## layout
 - optional header definition block
@@ -72,18 +71,18 @@ anywhere in or across a line.
     ${head} foo = 'bar' } ${com} settings for parsing file }
 
     ${var}
-        foo = 'foobar'
-        bar.foo = 'foobaz'
+       foo = 'foobar'
+       bar.foo = 'foobaz'
     }
 
     ${arr}
-        foo = ['foobar','foobaz']
-        foo.bar.baz = [ 'foobar', 'foobaz', 'barbaz' ]
+       foo = ['foobar','foobaz']
+       foo.bar.baz = [ 'foobar', 'foobaz', 'barbaz' ]
     }
 
     ${pat}
-        foo.bar = 'foobar'
-        bar = "foo_bar"
+       foo.bar = 'foobar'
+       bar = "foo_bar"
     }
 
     # FOOBAR

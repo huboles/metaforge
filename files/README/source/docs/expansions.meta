@@ -1,6 +1,9 @@
 ${
     title = 'expansions'
     description = 'expanding variables and patterns in a file'
+    var_sub = '${'
+    arr_sub = '@{'
+    pat_sub = '&{'
 }
 
 ## syntax
@@ -12,11 +15,11 @@ when the file is built
 
 ### examples
 
-    ...this is a string with a ${var}variable} to be expanded...
+    ...this is a string with a ${var_sub}variable} to be expanded...
 
-    ...this line has a ${pat}pattern} inside of it...
+    ...this line has a ${pat_sub}pattern} inside of it...
 
-    ...this ${arr}array} will be replaced...
+    ...this ${arr_sub}array} will be replaced...
 
 ## behavior
 
@@ -33,9 +36,9 @@ don't need any extra expansion.
 
     definition:
         ${var}
-            baz = "foo"
-            bar.baz = "quux"
-            quux = BLANK
+           baz = "foo"
+           bar.baz = "quux"
+           quux = BLANK
         }
 
     pattern [foo]: <p>${var}baz} ${var}quux}</p>
@@ -55,7 +58,7 @@ parts of patterns.
 
 #### example
 
-    pattern [foo]: <p>${arr}bar}</p>
+    pattern [foo]: <p>${arr_sub}bar}</p>
 
     defintion: ${arr} foo.bar = ['foo', 'bar', 'baz'] }
 
@@ -97,9 +100,9 @@ so it is required to have at least a **default.meta** in the **pattern/base** di
 
 ### example
 
-    pattern [base]: <html>${pat}body}</html>
+    pattern [base]: <html>${pat_sub}body}</html>
 
-    pattern [body]: <body>${pat}SOURCE}</body>
+    pattern [body]: <body>${pat_sub}SOURCE}</body>
 
     source [SOURCE]: foo *bar* baz
 
