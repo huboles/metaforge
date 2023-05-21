@@ -1,5 +1,12 @@
-use crate::{parse_string, MetaError, Options};
+mod arrays;
+mod attributes;
+mod patterns;
+mod source;
+mod variables;
+
+use crate::{log, parse_string, MetaError, Options};
 use eyre::Result;
+use pandoc::{InputFormat, InputKind, OutputFormat, OutputKind, Pandoc};
 use std::{collections::HashMap, path::PathBuf};
 
 use super::*;
@@ -15,6 +22,18 @@ pub struct MetaFile<'a> {
 }
 
 impl<'a> MetaFile<'a> {
+    pub fn new(opts: &'a Options) -> Self {
+        Self {
+            opts,
+            path: PathBuf::new(),
+            header: Header::new(),
+            variables: HashMap::new(),
+            arrays: HashMap::new(),
+            patterns: HashMap::new(),
+            source: Vec::new(),
+        }
+    }
+
     pub fn build(path: PathBuf, opts: &'a Options) -> Result<Self> {
         let str = match std::fs::read_to_string(&path) {
             Ok(str) => str,
@@ -35,85 +54,26 @@ impl<'a> MetaFile<'a> {
         Ok(metafile)
     }
 
-    pub fn new(opts: &'a Options) -> Self {
-        Self {
-            opts,
-            path: PathBuf::new(),
-            header: Header::new(),
-            variables: HashMap::new(),
-            arrays: HashMap::new(),
-            patterns: HashMap::new(),
-            source: Vec::new(),
+    pub fn construct(&self) -> Result<String, Box<MetaError>> {
+        log!(self.opts, format!("building {}", self.path.display()), 1);
+
+        if self.header.blank {
+            return Ok(String::new());
+        } else if self.header.ignore {
+            return Err(Box::new(MetaError::Ignored));
         }
-    }
 
-    pub fn dest(&self) -> Result<PathBuf> {
-        let mut path = self
-            .opts
-            .build
-            .join(self.path.strip_prefix(&self.opts.source)?);
-        path.set_extension(&self.header.filetype);
+        let html = self.to_html().map_err(MetaError::from)?;
 
-        Ok(path)
-    }
+        let pattern = self.get_pattern("base").map_err(MetaError::from)?;
+        let mut base = crate::parse_string(pattern, self.opts).map_err(MetaError::from)?;
 
-    pub fn name(&self) -> Result<String> {
-        if self.path.starts_with(&self.opts.source) {
-            // in source dir, we want the file name without the '.meta' extension
-            let name: String = self
-                .path
-                .strip_prefix(&self.opts.source)?
-                .components()
-                .map(|x| {
-                    x.as_os_str()
-                        .to_string_lossy()
-                        .to_string()
-                        .replace(".meta", "")
-                })
-                .collect::<Vec<String>>()
-                .join(".");
-            Ok(name)
-        } else if self.path.starts_with(&self.opts.pattern) {
-            // in pattern dir, we want the parent dir
-            let name = self.path.strip_prefix(&self.opts.pattern)?;
-            let name = name
-                .parent()
-                .map(|s| s.to_string_lossy().to_string().replace('/', "."))
-                .unwrap_or_default();
-            Ok(name)
-        } else {
-            Err(MetaError::Name {
-                file: self.path.to_string_lossy().to_string(),
-            }
-            .into())
-        }
-    }
+        base.merge(self);
+        base.patterns.insert(Scope::into_global("SOURCE"), html);
 
-    pub fn get_var(&self, key: &Scope) -> Option<&String> {
-        self.variables.get(key)
-    }
+        let output = base.get_source().map_err(MetaError::from)?;
 
-    pub fn get_arr(&self, key: &Scope) -> Option<&[String]> {
-        self.arrays.get(key).map(|a| &a[..])
-    }
-
-    pub fn get_pat(&self, key: &Scope) -> Option<&String> {
-        self.patterns.get(key)
-    }
-
-    pub fn var_defined(&self, key: &str) -> bool {
-        self.variables.contains_key(&Scope::into_local(key))
-            || self.variables.contains_key(&Scope::into_global(key))
-    }
-
-    pub fn arr_defined(&self, key: &str) -> bool {
-        self.arrays.contains_key(&Scope::into_local(key))
-            || self.arrays.contains_key(&Scope::into_global(key))
-    }
-
-    pub fn pat_defined(&self, key: &str) -> bool {
-        self.patterns.contains_key(&Scope::into_local(key))
-            || self.patterns.contains_key(&Scope::into_global(key))
+        Ok(output)
     }
 
     pub fn merge(&mut self, other: &Self) {

@@ -1,4 +1,4 @@
-use crate::{build_metafile, MetaFile, Options};
+use crate::{MetaFile, Options};
 use eyre::{Result, WrapErr};
 use std::{error::Error, fs, path::PathBuf};
 
@@ -18,7 +18,7 @@ fn unit_test(test: (&str, &str)) -> Result<()> {
     file_path.set_extension("meta");
     let file = MetaFile::build(file_path, &opts)?;
 
-    let output = build_metafile(&file).wrap_err_with(|| test.0.to_string())?;
+    let output = file.construct().wrap_err_with(|| test.0.to_string())?;
 
     if output == test.1 {
         Ok(())

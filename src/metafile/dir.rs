@@ -1,4 +1,4 @@
-use crate::{build_metafile, MetaError, Options};
+use crate::{MetaError, Options};
 use eyre::Result;
 use std::{fs, path::PathBuf};
 
@@ -61,7 +61,7 @@ impl<'a> DirNode<'a> {
     pub fn build_files(&mut self) -> Result<()> {
         for file in self.files.iter_mut() {
             file.merge(&self.global);
-            match build_metafile(file) {
+            match file.construct() {
                 Ok(str) => {
                     fs::write(file.dest()?, str)?;
                 }

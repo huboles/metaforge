@@ -2,13 +2,14 @@ extern crate pest;
 #[macro_use]
 extern crate pest_derive;
 
-mod builder;
 mod error;
 mod metafile;
 mod options;
 mod parser;
 
-pub use builder::*;
+#[cfg(test)]
+mod tests;
+
 pub use error::*;
 pub use metafile::*;
 pub use options::*;
@@ -17,6 +18,15 @@ pub use parser::*;
 use clap::Parser;
 use eyre::Result;
 use std::fs;
+
+#[macro_export]
+macro_rules! log {
+    ($opts:expr, $string:expr, $level:expr) => {
+        if $opts.verbose >= $level && !$opts.quiet {
+            println!("{}", $string);
+        }
+    };
+}
 
 pub fn get_opts() -> Result<Options> {
     let opts = Options::try_from(Opts::parse())?;
@@ -65,12 +75,12 @@ pub fn single_file(opts: &Options) -> Result<String> {
 
     let file = parse_string(source, opts)?;
 
-    Ok(build_metafile(&file)?)
+    Ok(file.construct()?)
 }
 
 pub fn new_site(opts: &Options) -> Result<()> {
     log!(
-        &opts,
+        opts,
         format!("building new site skeleton in {}", opts.root.display()),
         1
     );
