@@ -1,107 +1,87 @@
 use crate::{MetaFile, Options};
-use eyre::{Result, WrapErr};
-use std::{error::Error, fs, path::PathBuf};
+use eyre::Result;
+use std::{fs, path::PathBuf};
 
-fn unit_test(test: (&str, &str)) -> Result<()> {
-    let dir = PathBuf::from("files/test_site").canonicalize()?;
+macro_rules! unit_test (
+    ($name:ident, $file:expr,$test:literal) => {
+        #[test]
+        fn $name() -> Result<()> {
+            let dir = PathBuf::from("files/test_site").canonicalize()?;
 
-    let mut opts = Options::new();
-    opts.root = dir.clone();
-    opts.source = dir.join("source");
-    opts.build = dir.join("build");
-    opts.pattern = dir.join("pattern");
-    opts.clean = true;
-    opts.undefined = true;
+            let mut opts = Options::new();
+            opts.root = dir.clone();
+            opts.source = dir.join("source");
+            opts.build = dir.join("build");
+            opts.pattern = dir.join("pattern");
 
-    let test_dir = opts.source.join("unit_tests");
-    let mut file_path = test_dir.join(test.0);
-    file_path.set_extension("meta");
-    let file = MetaFile::build(file_path, &opts)?;
+            let test_dir = opts.source.join("unit_tests");
+            let mut path = test_dir.join($file);
+            path.set_extension("meta");
+            let file = MetaFile::build(path, &opts)?;
+            assert_eq!(file.construct()?, $test);
+            Ok(())
+        }
+    };
+);
 
-    let output = file.construct().wrap_err_with(|| test.0.to_string())?;
+unit_test!(blank_pattern, "blank/blank_pattern", "");
+unit_test!(blank_variable, "blank/blank_variable", "<html>\n</html>\n");
+unit_test!(blank_array, "blank/blank_array", "<html>\n</html>\n");
+unit_test!(blank_comment, "blank/comment", "<html>\n</html>\n");
+unit_test!(
+    inline_comment,
+    "blank/inline_comment",
+    "<html>\n<p>inline comment</p>\n</html>\n"
+);
+unit_test!(
+    expand_var_in_src,
+    "expand/variable_in_source",
+    "<html>\n<p>GOOD</p>\n</html>\n"
+);
+unit_test!(
+    expand_var_in_pat,
+    "expand/variable_in_pattern",
+    "<html>\nGOOD</html>\n"
+);
+unit_test!(
+    expand_arr_in_src,
+    "expand/array_in_source",
+    "<html>\n<p>12345</p>\n</html>\n"
+);
+unit_test!(
+    expand_arr_in_pat,
+    "expand/array_in_pattern",
+    "<html>\n12345</html>\n"
+);
+unit_test!(
+    expand_pat_in_src,
+    "expand/pattern_in_source",
+    "<p>GOOD</p>\n"
+);
+unit_test!(
+    expand_pat_in_pat,
+    "expand/pattern_in_pattern",
+    "<html>\nGOOD\nGOOD\n</html>\n"
+);
+unit_test!(
+    override_var,
+    "override/variable",
+    "<html>\n<p>GOOD</p>\n</html>\n"
+);
+unit_test!(
+    override_pat,
+    "override/pattern",
+    "<html>\nGOOD\nGOOD\n</html>\n"
+);
+unit_test!(
+    header_no_pandoc,
+    "header/pandoc",
+    "# This should not become html\n"
+);
 
-    if output == test.1 {
-        Ok(())
-    } else {
-        let err = eyre::eyre!("{} - failed", test.0);
-        eprintln!("{:?}", err);
-        eprintln!("\nTEST:\n{}\nOUTPUT:\n{}", test.1, output);
-        Err(err)
-    }
-}
-
-fn clean_build_dir() -> Result<()> {
-    let build = PathBuf::from("files/test_site")
-        .canonicalize()?
-        .join("build");
-
-    if build.exists() {
-        fs::remove_dir_all(&build)?;
-    }
-
-    fs::create_dir_all(&build)?;
-    Ok(())
-}
+unit_test!(header_blank, "header/blank", "");
 
 #[test]
-fn builder_tests() -> Result<()> {
-    clean_build_dir()?;
-
-    let tests: Vec<(&str, &str)> = vec![
-        ("find_dest", "<html>\n</html>\n"),
-        ("blank/blank_pattern", ""),
-        ("blank/blank_variable", "<html>\n</html>\n"),
-        ("blank/blank_array", "<html>\n</html>\n"),
-        ("blank/comment", "<html>\n</html>\n"),
-        (
-            "blank/inline_comment",
-            "<html>\n<p>inline comment</p>\n</html>\n",
-        ),
-        (
-            "expand/variable_in_source",
-            "<html>\n<p>GOOD</p>\n</html>\n",
-        ),
-        ("expand/variable_in_pattern", "<html>\nGOOD</html>\n"),
-        ("expand/array_in_source", "<html>\n<p>12345</p>\n</html>\n"),
-        ("expand/array_in_pattern", "<html>\n12345</html>\n"),
-        ("expand/pattern_in_source", "<p>GOOD</p>\n"),
-        ("expand/pattern_in_pattern", "<html>\nGOOD\nGOOD\n</html>\n"),
-        ("override/variable", "<html>\n<p>GOOD</p>\n</html>\n"),
-        ("override/pattern", "<html>\nGOOD\nGOOD\n</html>\n"),
-        ("header/pandoc", "# This should not become html\n"),
-        ("header/blank", ""),
-    ];
-
-    let mut err = false;
-    let mut errs: Vec<Box<dyn Error>> = Vec::new();
-    for test in tests.iter() {
-        match unit_test(*test) {
-            Ok(_) => continue,
-            Err(e) => {
-                err = true;
-                errs.push(e.into());
-            }
-        }
-    }
-
-    if let Err(e) = test_filetype_header() {
-        errs.push(e.into());
-    }
-
-    if let Err(e) = test_global() {
-        errs.push(e.into());
-    }
-
-    if err {
-        for e in errs.iter() {
-            eprintln!("{}", e);
-        }
-        return Err(eyre::eyre!("failed tests"));
-    }
-
-    Ok(())
-}
-
 fn test_filetype_header() -> Result<()> {
     let dir = PathBuf::from("files/test_site").canonicalize()?;
 
@@ -127,6 +107,7 @@ fn test_filetype_header() -> Result<()> {
     }
 }
 
+#[test]
 fn test_global() -> Result<()> {
     let dir = PathBuf::from("files/test_site/").canonicalize()?;
 
