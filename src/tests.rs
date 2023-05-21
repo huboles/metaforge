@@ -81,6 +81,12 @@ unit_test!(
 
 unit_test!(header_blank, "header/blank", "");
 
+unit_test!(
+    pat_file,
+    "expand/file.meta",
+    "<html>\n<p>GOOD</p>\n</html>\n"
+);
+
 #[test]
 fn test_filetype_header() -> Result<()> {
     let dir = PathBuf::from("files/test_site").canonicalize()?;

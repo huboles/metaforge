@@ -16,6 +16,13 @@ impl<'a> MetaFile<'a> {
             Ok(name.to_string())
         } else if let Some(name) = self.patterns.get(&Scope::into_global(key)) {
             Ok(name.to_string())
+        } else if self
+            .opts
+            .pattern
+            .join(key.replace(".", "/") + ".meta")
+            .exists()
+        {
+            Ok(String::new())
         } else if self.header.panic_default {
             Err(MetaError::UndefinedDefault {
                 pattern: key.to_string(),

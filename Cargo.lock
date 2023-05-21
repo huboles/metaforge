@@ -524,7 +524,6 @@ dependencies = [
  "pandoc",
  "pest",
  "pest_derive",
- "rayon",
  "thiserror",
 ]
 

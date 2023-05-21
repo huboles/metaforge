@@ -1,6 +1,5 @@
 use crate::{MetaError, Options};
 use eyre::Result;
-use rayon::prelude::*;
 use std::{fs, path::PathBuf};
 
 use super::*;
