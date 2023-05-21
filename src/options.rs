@@ -23,6 +23,9 @@ pub struct Opts {
     /// only build a single file
     #[arg(short, long, value_name = "FILENAME")]
     pub file: Option<String>,
+    /// parallel processing
+    #[arg(short, long, default_value_t = false)]
+    pub parallel: bool,
     /// create a new skeleton directory
     #[arg(long, default_value_t = false)]
     pub new: bool,
@@ -62,6 +65,7 @@ pub struct Options {
     pub input: String,
     pub output: String,
     pub verbose: u8,
+    pub parallel: bool,
     pub quiet: bool,
     pub force: bool,
     pub undefined: bool,
@@ -81,6 +85,7 @@ impl Options {
             input: String::default(),
             output: String::default(),
             verbose: 0,
+            parallel: false,
             quiet: false,
             force: false,
             undefined: false,
@@ -103,46 +108,47 @@ impl TryFrom<crate::Opts> for Options {
         opts.clean = value.clean;
         opts.no_pandoc = value.no_pandoc;
         opts.new = value.new;
+        opts.parallel = value.parallel;
 
-        if let Some(root) = value.root.as_deref() {
-            opts.root = PathBuf::from(root).canonicalize()?;
+        opts.root = if let Some(root) = value.root.as_deref() {
+            PathBuf::from(root).canonicalize()
         } else {
-            opts.root = std::env::current_dir()?;
-        }
+            std::env::current_dir()
+        }?;
 
-        if let Some(source) = value.source.as_deref() {
-            opts.source = PathBuf::from(source).canonicalize()?;
+        opts.source = if let Some(source) = value.source.as_deref() {
+            PathBuf::from(source).canonicalize()
         } else {
-            opts.source = opts.root.join("source");
-        }
+            Ok(opts.root.join("source"))
+        }?;
 
-        if let Some(build) = value.build.as_deref() {
-            opts.build = PathBuf::from(build).canonicalize()?;
+        opts.build = if let Some(build) = value.build.as_deref() {
+            PathBuf::from(build).canonicalize()
         } else {
-            opts.build = opts.root.join("build");
-        }
+            Ok(opts.root.join("build"))
+        }?;
 
-        if let Some(pattern) = value.pattern.as_deref() {
-            opts.pattern = PathBuf::from(pattern).canonicalize()?;
+        opts.pattern = if let Some(pattern) = value.pattern.as_deref() {
+            PathBuf::from(pattern).canonicalize()
         } else {
-            opts.pattern = opts.root.join("pattern");
-        }
+            Ok(opts.root.join("pattern"))
+        }?;
 
         if let Some(file) = value.file.as_deref() {
             opts.file = Some(PathBuf::from(file).canonicalize()?);
         }
 
-        if let Some(input) = value.input {
-            opts.input = input;
+        opts.input = if let Some(input) = value.input {
+            input
         } else {
-            opts.input = String::from("html");
-        }
+            String::from("html")
+        };
 
-        if let Some(output) = value.output {
-            opts.output = output;
+        opts.output = if let Some(output) = value.output {
+            output
         } else {
-            opts.output = String::from("markdown");
-        }
+            String::from("markdown")
+        };
 
         Ok(opts)
     }

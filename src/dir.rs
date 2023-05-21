@@ -40,6 +40,8 @@ impl<'a> DirNode<'a> {
     // parses all contained files and directories and pushes
     // parsed structures into the files and directories vectors
     pub fn map(&mut self, global: &'a MetaFile) -> Result<()> {
+        if self.opts.parallel {}
+
         for f in fs::read_dir(&self.path)? {
             let file = f?.path();
 
