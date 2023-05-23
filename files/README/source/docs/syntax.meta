@@ -49,7 +49,7 @@ whitespace and newlines between list values are accepted
     ]
 
 ## comments
-a comment sigil \- followed by a comment in braces.
+a comment sigil (\-) followed by a comment in braces.
 the only characters not allowed are braces.
 
 comments get removed during the first pass through of parsing, and can occur

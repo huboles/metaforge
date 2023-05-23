@@ -7,23 +7,24 @@ ${
 ## rules
 
 definition blocks are allowed in all files, but have to be before any source
-text, and after any header settings (which are a special type of definition block)
+text, and after any header settings (which are a special type of definition block).
 
-a block is a sigil for the definition type, followed by braces that
-surround assignment statements
+a block consists of a sigil for the definition type, followed by braces that
+surround assignment statements.
 
 assignments are identifiers, followed by an equals sign (=), then a value
 
 definition blocks can have spaces and new lines arbitrarily inserted
-between each component, and support multiple assignments per block
+between each component, and support multiple assignments per block.
 
 ## identifiers
 
-identifiers can contain alphanumeric ascii values and _ as well as separating dots (.)
+identifiers can contain alphanumeric ascii values and underscores [a-zA-Z0-9_],
+as well as separating dots (.)
 
-variable identifiers without dots are available to any pattern called by the file
+variable identifiers without dots are available to any pattern called by the file.
 
-array identifiers without dots are available only to the pattern they are defined in
+array identifiers without dots are available only to the pattern they are defined in.
 
 variable and array identifiers with separating dots use the final item
 as the identifier, and the preceding items are expanded like a pattern identifier to make
@@ -41,9 +42,9 @@ assignment in a local block can be made global again by prefixing it with an exc
 ## values
 
 values can be a double or single quoted string, if defining an array,
-a value is a bracket surrounded, comma separated list of strings
+a value is a bracket surrounded, comma separated list of strings.
 
-all values can optionally be assigned as ***BLANK***, which expands to nothing
+all values can optionally be assigned as ***BLANK***, which expands to nothing.
 
 patterns can also be assigned as ***DEFAULT***, for overriding globally defined patterns.
 

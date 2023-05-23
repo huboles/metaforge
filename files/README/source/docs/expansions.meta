@@ -41,11 +41,11 @@ don't need any extra expansion.
            quux = BLANK
         }
 
-    pattern [foo]: <p>${var}baz} ${var}quux}</p>
+    pattern [foo]: <p>${var_sub}baz} ${var}quux}</p>
 
     expanded [foo]: <p>foo </p>
 
-    pattern [bar]: <p>${var}baz} ${var}quux}</p>
+    pattern [bar]: <p>${var_sub}baz} ${var}quux}</p>
 
     expanded [bar]: <p>quux </p>
 
