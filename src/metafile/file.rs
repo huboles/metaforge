@@ -46,10 +46,6 @@ impl<'a> MetaFile<'a> {
         };
         let mut metafile = parse_string(str, opts)?;
 
-        if metafile.header.ignore {
-            return Err(MetaError::Ignored.into());
-        }
-
         metafile.path = path;
         Ok(metafile)
     }

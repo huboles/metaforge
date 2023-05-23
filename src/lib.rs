@@ -52,7 +52,12 @@ pub fn build_site(opts: &Options) -> Result<()> {
     );
 
     let mut source = DirNode::build(opts.source.clone(), opts)?;
-    let global_init = MetaFile::new(opts);
+
+    let global_init = if source.path.join("default.meta").exists() {
+        MetaFile::build(source.path.join("default.meta"), &opts)?
+    } else {
+        MetaFile::new(&opts)
+    };
 
     source.map(&global_init)?;
     source.build_dir()

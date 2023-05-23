@@ -6,11 +6,11 @@ use super::*;
 
 #[derive(Debug, Clone)]
 pub struct DirNode<'a> {
-    path: PathBuf,
-    opts: &'a Options,
-    global: MetaFile<'a>,
-    files: Vec<MetaFile<'a>>,
-    dirs: Vec<DirNode<'a>>,
+    pub path: PathBuf,
+    pub opts: &'a Options,
+    pub global: MetaFile<'a>,
+    pub files: Vec<MetaFile<'a>>,
+    pub dirs: Vec<DirNode<'a>>,
 }
 
 impl<'a> DirNode<'a> {
@@ -39,8 +39,6 @@ impl<'a> DirNode<'a> {
     // parses all contained files and directories and pushes
     // parsed structures into the files and directories vectors
     pub fn map(&mut self, global: &'a MetaFile) -> Result<()> {
-        if self.opts.parallel {}
-
         for f in fs::read_dir(&self.path)? {
             let file = f?.path();
 
@@ -56,6 +54,8 @@ impl<'a> DirNode<'a> {
                 self.files.push(file)
             }
         }
+
+        eprintln!("{:#?}", self);
 
         Ok(())
     }
