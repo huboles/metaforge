@@ -24,6 +24,28 @@ macro_rules! unit_test (
     };
 );
 
+macro_rules! panic_test (
+    ($name:ident, $file:expr,$test:literal) => {
+        #[test]
+        #[should_panic]
+        fn $name() {
+            let dir = PathBuf::from("files/test_site").canonicalize().unwrap_or_default();
+
+            let mut opts = Options::new();
+            opts.root = dir.clone();
+            opts.source = dir.join("source");
+            opts.build = dir.join("build");
+            opts.pattern = dir.join("pattern");
+
+            let test_dir = opts.source.join("unit_tests");
+            let mut path = test_dir.join($file);
+            path.set_extension("meta");
+            let file = MetaFile::build(path, &opts).unwrap();
+            assert_eq!(file.construct().unwrap(), $test);
+        }
+    };
+);
+
 unit_test!(blank_pattern, "blank/blank_pattern", "");
 unit_test!(blank_variable, "blank/blank_variable", "<html>\n</html>\n");
 unit_test!(blank_array, "blank/blank_array", "<html>\n</html>\n");
@@ -86,6 +108,8 @@ unit_test!(
     "expand/file.meta",
     "<html>\n<p>GOOD</p>\n</html>\n"
 );
+
+panic_test!(ignore, "ignore.meta", "");
 
 #[test]
 fn test_filetype_header() -> Result<()> {

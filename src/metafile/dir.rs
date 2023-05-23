@@ -39,6 +39,8 @@ impl<'a> DirNode<'a> {
     // parses all contained files and directories and pushes
     // parsed structures into the files and directories vectors
     pub fn map(&mut self, global: &'a MetaFile) -> Result<()> {
+        if self.opts.parallel {}
+
         for f in fs::read_dir(&self.path)? {
             let file = f?.path();
 
@@ -61,6 +63,7 @@ impl<'a> DirNode<'a> {
     pub fn build_files(&mut self) -> Result<()> {
         for file in self.files.iter_mut() {
             file.merge(&self.global);
+            println!(":constructing {:?}", &file);
             match file.construct() {
                 Ok(str) => {
                     fs::write(file.dest()?, str)?;
@@ -71,12 +74,9 @@ impl<'a> DirNode<'a> {
                         eprintln!("ignoring {}: {}", file.path.display(), e);
                         continue;
                     } else {
-                        // we raise an ignored error to quickly abort any file parsing
-                        if let MetaError::Ignored = *e {
-                            continue;
-                        // anything else gets wrapped up and passed up the calling chain
-                        } else {
-                            return Err(e.into());
+                        match *e {
+                            MetaError::Ignored => continue,
+                            e => return Err(e.into()),
                         }
                     }
                 }

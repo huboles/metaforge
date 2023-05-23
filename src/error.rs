@@ -5,7 +5,7 @@ use thiserror::Error;
 pub enum MetaError {
     #[error("unknown internal error")]
     Unknown,
-    #[error("internal break switch")]
+    #[error("file ignored")]
     Ignored,
     #[error("internal filetype error")]
     Filetype,
