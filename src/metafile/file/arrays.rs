@@ -22,12 +22,18 @@ impl<'a> MetaFile<'a> {
             // make a hash map of [keys in source] -> [defined arrays]
             .map(|key| {
                 // concat array to pattern name to get key in HashMap
+                let class = self.class().unwrap_or_default();
+                let class_key = Scope::Local(class + "." + key);
                 let name = self.name().unwrap_or_default();
-                let long_key = name + "." + key;
+                let name_key = Scope::Local(name + "." + key);
 
-                let value = if let Some(val) = self.arrays.get(&Scope::into_global(&long_key)) {
+                let value = if let Some(val) = self.arrays.get(&name_key) {
                     &val[..]
-                } else if let Some(val) = self.arrays.get(&Scope::into_local(&long_key)) {
+                } else if let Some(val) = self.arrays.get(&name_key.to_global()) {
+                    &val[..]
+                } else if let Some(val) = self.arrays.get(&class_key) {
+                    &val[..]
+                } else if let Some(val) = self.arrays.get(&class_key.to_global()) {
                     &val[..]
                 } else if let Some(val) = self.arrays.get(&Scope::into_global(key)) {
                     &val[..]

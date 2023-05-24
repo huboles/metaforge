@@ -24,8 +24,10 @@ fn test_name() -> Result<()> {
     pat2.path = pat2_path;
 
     assert_eq!(src.name()?, "test.file");
-    assert_eq!(pat1.name()?, "base");
-    assert_eq!(pat2.name()?, "test.class");
+    assert_eq!(pat1.name()?, "base.test");
+    assert_eq!(pat2.name()?, "test.class.file");
+    assert_eq!(pat1.class()?, "base");
+    assert_eq!(pat2.class()?, "test.class");
 
     Ok(())
 }

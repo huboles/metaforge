@@ -109,6 +109,12 @@ unit_test!(
     "<html>\n<p>GOOD</p>\n</html>\n"
 );
 
+unit_test!(
+    direct_call,
+    "expand/direct_call",
+    "<html>\n<p>abcd</p>\n</html>\n"
+);
+
 panic_test!(ignore, "ignore.meta", "");
 
 #[test]

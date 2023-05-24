@@ -1,0 +1,3 @@
+@{ test.list.item = ['a','b','c','d'] }
+
+&{test.list}
