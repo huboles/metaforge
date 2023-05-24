@@ -34,7 +34,7 @@ impl<'a> MetaFile<'a> {
         }
     }
 
-    pub fn build(path: PathBuf, opts: &'a Options) -> Result<Self> {
+    pub fn build(path: PathBuf, opts: &'a Options) -> Result<Self, MetaError> {
         let str = match std::fs::read_to_string(&path) {
             Ok(str) => str,
             Err(_) => {
@@ -44,7 +44,8 @@ impl<'a> MetaFile<'a> {
                 .into())
             }
         };
-        let mut metafile = parse_string(str, opts)?;
+
+        let mut metafile = parse_string(str, opts).map_err(MetaError::from)?;
 
         metafile.path = path;
         Ok(metafile)

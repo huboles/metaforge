@@ -34,3 +34,13 @@ pub enum MetaError {
     #[error(transparent)]
     Other(#[from] eyre::Error),
 }
+
+pub fn check_ignore<T>(result: Result<T, MetaError>) -> Result<Option<T>, MetaError> {
+    match result {
+        Ok(f) => Ok(Some(f)),
+        Err(e) => match e {
+            MetaError::Ignored => Ok(None),
+            e => Err(e.into()),
+        },
+    }
+}

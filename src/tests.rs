@@ -123,23 +123,17 @@ fn test_filetype_header() -> Result<()> {
     let path = opts.source.join("unit_tests/header/filetype.meta");
     let file = MetaFile::build(path, &opts)?;
 
-    if file.dest()? == opts.build.join("unit_tests/header/filetype.rss") {
-        Ok(())
-    } else {
-        let err = eyre::eyre!("filetype - failed");
-        eprintln!("{:?}", err);
-        eprintln!(
-            "\nTEST:\n{}\nOUTPUT:\n{}",
-            opts.build.join("unit_tests/header/filetype.rss").display(),
-            file.dest()?.display()
-        );
-        Err(err)
-    }
+    assert_eq!(
+        file.dest()?,
+        opts.build.join("unit_tests/header/filetype.rss")
+    );
+
+    Ok(())
 }
 
 #[test]
 fn test_global() -> Result<()> {
-    let dir = PathBuf::from("files/test_site/").canonicalize()?;
+    let dir = PathBuf::from("files/test_site").canonicalize()?;
 
     let mut opts = Options::new();
     opts.root = dir.clone();
@@ -148,8 +142,11 @@ fn test_global() -> Result<()> {
     opts.pattern = dir.join("pattern");
 
     let mut dir_node = crate::DirNode::build(dir.join("source/unit_tests/global"), &opts)?;
+
     let global = MetaFile::build(dir.join("source/default.meta"), &opts)?;
+
     dir_node.map(&global)?;
+
     dir_node.build_dir()?;
 
     assert_eq!(

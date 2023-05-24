@@ -1,4 +1,4 @@
-use crate::{MetaError, Options};
+use crate::{error::*, Options};
 use eyre::Result;
 use std::{fs, path::PathBuf};
 
@@ -39,6 +39,16 @@ impl<'a> DirNode<'a> {
     // parses all contained files and directories and pushes
     // parsed structures into the files and directories vectors
     pub fn map(&mut self, global: &'a MetaFile) -> Result<()> {
+        if self.path.join("default.meta").exists() {
+            if let Some(mut new_global) = check_ignore(MetaFile::build(
+                self.path.clone().join("default.meta"),
+                self.opts,
+            ))? {
+                new_global.merge(global);
+                self.global = new_global;
+            }
+        }
+
         for f in fs::read_dir(&self.path)? {
             let file = f?.path();
 
@@ -46,16 +56,13 @@ impl<'a> DirNode<'a> {
                 let dir = DirNode::build(file, self.opts)?;
                 self.dirs.push(dir);
             } else if file.file_name().and_then(|f| f.to_str()) == Some("default.meta") {
-                let mut new_global = MetaFile::build(file, self.opts)?;
-                new_global.merge(global);
-                self.global = new_global;
+                continue;
             } else if file.extension().and_then(|f| f.to_str()) == Some("meta") {
-                let file = MetaFile::build(file, self.opts)?;
-                self.files.push(file)
+                if let Some(file) = check_ignore(MetaFile::build(file, self.opts))? {
+                    self.files.push(file)
+                }
             }
         }
-
-        eprintln!("{:#?}", self);
 
         Ok(())
     }
@@ -63,7 +70,6 @@ impl<'a> DirNode<'a> {
     pub fn build_files(&mut self) -> Result<()> {
         for file in self.files.iter_mut() {
             file.merge(&self.global);
-            println!(":constructing {:?}", &file);
             match file.construct() {
                 Ok(str) => {
                     fs::write(file.dest()?, str)?;
@@ -76,7 +82,10 @@ impl<'a> DirNode<'a> {
                     } else {
                         match *e {
                             MetaError::Ignored => continue,
-                            e => return Err(e.into()),
+                            e => {
+                                eprintln!("{}", file.path.display());
+                                return Err(e.into());
+                            }
                         }
                     }
                 }
