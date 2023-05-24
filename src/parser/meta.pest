@@ -17,7 +17,12 @@ char   =  _{
 
 array = _{
     "[" ~ "]"
-  | "[" ~ " "* ~ string ~ (" "* ~ "," ~ " "* ~ string)* ~ " "* ~ "]"
+  | "[" 
+  ~ WHITESPACE* 
+  ~ string 
+  ~ (WHITESPACE* ~ "," ~ WHITESPACE* ~ string)* 
+  ~ WHITESPACE* ~ ","? ~ WHITESPACE*
+  ~ "]"
 }
 
 key_chars = @{ (ASCII_ALPHANUMERIC | "_" | ".")* }

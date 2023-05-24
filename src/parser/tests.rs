@@ -12,6 +12,16 @@ fn no_spaces_in_def() {
 }
 
 #[test]
+fn newlines_in_array() {
+    test_str!("@{ a = [\n'stuff',\n'other stuff'\n] }");
+}
+
+#[test]
+fn trailing_commas() {
+    test_str!(r#"@{ a = ['stuff','other stuff',] }"#);
+}
+
+#[test]
 fn just_source_string() {
     test_str!(r#"This is just a &{source} snippet"#);
 }
