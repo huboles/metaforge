@@ -1,4 +1,3 @@
-use crate::Rule;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -25,12 +24,12 @@ pub enum MetaError {
     UndefinedDefault { pattern: String, path: String },
     #[error("the parser cannot resolve this input: {input}")]
     UnreachableRule { input: String },
+    #[error("{file}\n{error}")]
+    ParserError { file: String, error: String },
     #[error(transparent)]
     MetaError(#[from] Box<MetaError>),
     #[error(transparent)]
     PandocError(#[from] pandoc::PandocError),
-    #[error(transparent)]
-    ParserError(#[from] pest::error::Error<Rule>),
     #[error(transparent)]
     Other(#[from] eyre::Error),
 }

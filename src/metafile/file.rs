@@ -45,7 +45,10 @@ impl<'a> MetaFile<'a> {
             }
         };
 
-        let mut metafile = parse_string(str, opts).map_err(MetaError::from)?;
+        let mut metafile = parse_string(str, opts).map_err(|e| MetaError::ParserError {
+            file: path.to_string_lossy().to_string(),
+            error: e.to_string(),
+        })?;
 
         metafile.path = path;
         Ok(metafile)
@@ -63,7 +66,10 @@ impl<'a> MetaFile<'a> {
         let html = self.to_html().map_err(MetaError::from)?;
 
         let pattern = self.get_pattern("base").map_err(MetaError::from)?;
-        let mut base = crate::parse_string(pattern, self.opts).map_err(MetaError::from)?;
+        let mut base = parse_string(pattern, self.opts).map_err(|e| MetaError::ParserError {
+            file: self.path.to_string_lossy().to_string(),
+            error: e.to_string(),
+        })?;
 
         base.merge(self);
         base.patterns.insert(Scope::into_global("SOURCE"), html);
