@@ -10,6 +10,7 @@ thiserror = "1"
 eyre = "0.6"
 pest = "2"
 pest_derive = "2"
+rayon = "1.7"
 
 [dev-dependencies]
 criterion = "0.4"
@@ -24,4 +25,8 @@ harness = false
 
 [[bench]]
 name = "pandoc"
+harness = false
+
+[[bench]]
+name = "parallel"
 harness = false
