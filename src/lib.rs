@@ -5,7 +5,6 @@ extern crate pest_derive;
 mod error;
 mod metafile;
 mod options;
-mod parallel;
 mod parser;
 
 #[cfg(test)]
@@ -14,7 +13,6 @@ mod tests;
 pub use error::*;
 pub use metafile::*;
 pub use options::*;
-pub use parallel::*;
 pub use parser::*;
 
 use clap::Parser;
