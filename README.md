@@ -1,4 +1,4 @@
-# metaforge - v0.1.1
+# metaforge - v0.1.2
 
 a pattern driven static site generator for extensible snippet insertion.
 
@@ -11,7 +11,6 @@ a pattern driven static site generator for extensible snippet insertion.
 
     $ cd metaforge
     $ cargo install --path .
-
 
 ## about
 

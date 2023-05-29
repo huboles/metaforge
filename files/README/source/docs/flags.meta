@@ -19,6 +19,9 @@ ${
             defaults to [root_dir]/pattern
     -f, --file <FILENAME>
             builds a single file and outputs it to stdout
+    -l  --parallel
+            enable parallel processing for faster build times
+            interleaves output from files in verbose mode
     -v, --verbose
             enable extra output. repeated flags give more info
                 v   => list source files/directories being created
