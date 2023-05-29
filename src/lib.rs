@@ -60,7 +60,12 @@ pub fn build_site(opts: &Options) -> Result<()> {
     };
 
     source.map(&global_init)?;
-    source.build_dir()
+
+    if opts.parallel {
+        source.par_dir()
+    } else {
+        source.build_dir()
+    }
 }
 
 pub fn single_file(opts: &Options) -> Result<String> {

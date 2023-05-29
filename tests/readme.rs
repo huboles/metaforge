@@ -13,6 +13,7 @@ fn readme() -> Result<()> {
     opts.build = dir.join("build");
     opts.pattern = dir.join("pattern");
     opts.clean = true;
+    opts.parallel = true;
 
     metaforge::build_site(&opts)
 }
