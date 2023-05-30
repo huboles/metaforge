@@ -73,6 +73,14 @@ impl<'a> MetaFile<'a> {
 
         base.merge(self);
         base.patterns.insert(Scope::into_global("SOURCE"), html);
+        let mut base_path = self.opts.pattern.join("base").join(
+            self.patterns
+                .get(&Scope::into_global("base"))
+                .unwrap_or(&"default".into()),
+        );
+
+        base_path.set_extension("meta");
+        base.path = base_path;
 
         let output = base.get_source().map_err(MetaError::from)?;
 
