@@ -17,10 +17,10 @@ char   =  _{
 
 array = _{
     "[" ~ "]"
-  | "[" 
-  ~ WHITESPACE* 
-  ~ string 
-  ~ (WHITESPACE* ~ "," ~ WHITESPACE* ~ string)* 
+  | "["
+  ~ WHITESPACE*
+  ~ string
+  ~ (WHITESPACE* ~ "," ~ WHITESPACE* ~ string)*
   ~ WHITESPACE* ~ ","? ~ WHITESPACE*
   ~ "]"
 }
@@ -46,9 +46,9 @@ substitution = _{ sigil ~ key ~ "}" }
 var_sub      =  { &("$") ~ substitution }
 arr_sub      =  { &("@") ~ substitution }
 pat_sub      =  { &("&") ~ substitution }
-identifier   = _{ var_sub | pat_sub | arr_sub }
+identifier   = _{ var_sub | pat_sub | arr_sub | COMMENT}
 
-source = { (identifier | char_seq)* }
+source = ${ (identifier | char_seq)* }
 
 file = {
     SOI ~ header? ~ definition* ~ source? ~ EOI

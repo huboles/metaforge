@@ -47,58 +47,62 @@ macro_rules! panic_test (
 );
 
 unit_test!(blank_pattern, "blank/blank_pattern", "");
-unit_test!(blank_variable, "blank/blank_variable", "<html>\n</html>\n");
-unit_test!(blank_array, "blank/blank_array", "<html>\n</html>\n");
-unit_test!(blank_comment, "blank/comment", "<html>\n</html>\n");
+unit_test!(
+    blank_variable,
+    "blank/blank_variable",
+    "<html>\n\n\n</html>\n"
+);
+unit_test!(blank_array, "blank/blank_array", "<html>\n\n\n</html>\n");
+unit_test!(blank_comment, "blank/comment", "<html>\n\n\n\n</html>\n");
 unit_test!(
     inline_comment,
     "blank/inline_comment",
-    "<html>\n<p>inline comment</p>\n</html>\n"
+    "<html>\n<p>inline comment</p>\n\n\n\n</html>\n"
 );
 unit_test!(
     expand_var_in_src,
     "expand/variable_in_source",
-    "<html>\n<p>GOOD</p>\n</html>\n"
+    "<html>\n<p>GOOD</p>\n\n\n\n</html>\n"
 );
 unit_test!(
     expand_var_in_pat,
     "expand/variable_in_pattern",
-    "<html>\nGOOD</html>\n"
+    "<html>\nGOOD\n\n\n</html>\n"
 );
 unit_test!(
     expand_arr_in_src,
     "expand/array_in_source",
-    "<html>\n<p>12345</p>\n</html>\n"
+    "<html>\n<p>1 2 3 4 5</p>\n\n\n\n</html>\n"
 );
 unit_test!(
     expand_arr_in_pat,
     "expand/array_in_pattern",
-    "<html>\n12345</html>\n"
+    "<html>\n1\n2\n3\n4\n5\n\n\n</html>\n"
 );
 unit_test!(
     expand_pat_in_src,
     "expand/pattern_in_source",
-    "<p>GOOD</p>\n"
+    "<p>GOOD</p>\n\n"
 );
 unit_test!(
     expand_pat_in_pat,
     "expand/pattern_in_pattern",
-    "<html>\nGOOD\nGOOD\n</html>\n"
+    "<html>\nGOOD\nGOOD\n\n\n\n</html>\n"
 );
 unit_test!(
     override_var,
     "override/variable",
-    "<html>\n<p>GOOD</p>\n</html>\n"
+    "<html>\n<p>GOOD</p>\n\n\n\n</html>\n"
 );
 unit_test!(
     override_pat,
     "override/pattern",
-    "<html>\nGOOD\nGOOD\n</html>\n"
+    "<html>\nGOOD\n GOOD\n\n\n\n</html>\n"
 );
 unit_test!(
     header_no_pandoc,
     "header/pandoc",
-    "# This should not become html\n"
+    "# This should not become html\n\n"
 );
 
 unit_test!(header_blank, "header/blank", "");
@@ -106,13 +110,19 @@ unit_test!(header_blank, "header/blank", "");
 unit_test!(
     pat_file,
     "expand/file.meta",
-    "<html>\n<p>GOOD</p>\n</html>\n"
+    "<html>\n<p>GOOD</p>\n\n\n\n</html>\n"
 );
 
 unit_test!(
     direct_call,
     "expand/direct_call",
-    "<html>\n<p>abcd</p>\n</html>\n"
+    "<html>\n<p>a b c d</p>\n\n\n\n</html>\n"
+);
+
+unit_test!(
+    expand_spaces,
+    "expand/spaces",
+    "<html>\n<p>GOOD GOOD</p>\n\n\n\n</html>\n"
 );
 
 panic_test!(ignore, "ignore.meta", "");
@@ -157,12 +167,12 @@ fn test_global() -> Result<()> {
 
     assert_eq!(
         fs::read_to_string(dir.join("build/unit_tests/global/pattern.html"))?,
-        "<p>GOOD GOOD</p>\n"
+        "<p>GOOD</p>\n<p>GOOD</p>\n\n"
     );
 
     assert_eq!(
         fs::read_to_string(dir.join("build/unit_tests/global/variable.html"))?,
-        "<p>GOODGOOD</p>\n"
+        "<p>GOOD GOOD</p>\n\n"
     );
 
     Ok(())

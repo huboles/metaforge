@@ -11,7 +11,7 @@ use source::*;
 #[cfg(test)]
 mod tests;
 
-use crate::{log, Header, MetaError, MetaFile, Options};
+use crate::{Header, MetaError, MetaFile, Options};
 use eyre::Result;
 use pest::{
     iterators::{Pair, Pairs},
