@@ -10,6 +10,7 @@ use pandoc::{InputFormat, InputKind, OutputFormat, OutputKind, Pandoc};
 use std::{collections::HashMap, path::PathBuf};
 
 use super::*;
+
 #[derive(Debug, Clone)]
 pub struct MetaFile<'a> {
     pub opts: &'a Options,
@@ -54,7 +55,7 @@ impl<'a> MetaFile<'a> {
         Ok(metafile)
     }
 
-    pub fn construct(&self) -> Result<String, Box<MetaError>> {
+    pub fn construct(&mut self) -> Result<String, Box<MetaError>> {
         log!(self.opts, format!("building {}", self.path.display()), 1);
 
         if self.header.blank {
@@ -70,7 +71,12 @@ impl<'a> MetaFile<'a> {
             return Err(Box::new(MetaError::Ignored));
         }
 
-        let html = self.to_html().map_err(MetaError::from)?;
+        let src_str: String;
+        if self.header.pandoc.map_or(true, |x| x) {
+            src_str = self.pandoc().map_err(MetaError::from)?;
+        } else {
+            src_str = self.get_source().map_err(MetaError::from)?;
+        }
 
         let pattern = self.get_pattern("base").map_err(MetaError::from)?;
         let mut base = parse_string(pattern, self.opts).map_err(|e| MetaError::ParserError {
@@ -79,7 +85,8 @@ impl<'a> MetaFile<'a> {
         })?;
 
         base.merge(self);
-        base.patterns.insert(Scope::create_global("SOURCE"), html);
+        base.patterns
+            .insert(Scope::create_global("SOURCE"), src_str);
         let mut base_path = self.opts.pattern.join("base").join(
             self.patterns
                 .get(&Scope::create_global("base"))

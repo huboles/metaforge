@@ -69,6 +69,10 @@ impl<'a> MetaFile<'a> {
         // copy over maps for expanding contained variables
         pattern.merge(self);
 
-        pattern.get_source()
+        if pattern.header.pandoc.unwrap_or(false) {
+            pattern.pandoc()
+        } else {
+            pattern.get_source()
+        }
     }
 }

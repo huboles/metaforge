@@ -17,7 +17,7 @@ macro_rules! unit_test (
             let test_dir = opts.source.join("unit_tests");
             let mut path = test_dir.join($file);
             path.set_extension("meta");
-            let file = MetaFile::build(path, &opts)?;
+            let mut file = MetaFile::build(path, &opts)?;
 
             let str = match file.construct() {
                 Ok(f) => f,
@@ -50,7 +50,7 @@ macro_rules! panic_test (
             let test_dir = opts.source.join("unit_tests");
             let mut path = test_dir.join($file);
             path.set_extension("meta");
-            let file = MetaFile::build(path, &opts).unwrap();
+            let mut file = MetaFile::build(path, &opts).unwrap();
             assert_eq!(file.construct().unwrap(), $test);
         }
     };
@@ -139,6 +139,12 @@ unit_test!(
     copy_header,
     "header/copy",
     r#"variable: ${this} should get copied verbatim"#
+);
+
+unit_test!(
+    expandoc,
+    "header/expandoc",
+    "<html>\n<h1 id=\"good\">GOOD</h1>\n\n\n</html>\n"
 );
 
 panic_test!(ignore, "ignore.meta", "");

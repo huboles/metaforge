@@ -8,7 +8,7 @@ pub struct Header {
     pub equal_arrays: bool,
     pub filetype: String,
     pub source: String,
-    pub pandoc: bool,
+    pub pandoc: Option<bool>,
     pub ignore: bool,
     pub copy_only: bool,
 }
@@ -22,7 +22,7 @@ impl Header {
             equal_arrays: false,
             filetype: String::from("html"),
             source: String::from("markdown"),
-            pandoc: true,
+            pandoc: None,
             ignore: false,
             copy_only: false,
         }
@@ -38,7 +38,7 @@ impl From<HashMap<String, String>> for Header {
                 "panic_default" => header.panic_default = val == "true",
                 "panic_undefined" => header.panic_undefined = val == "true",
                 "equal_arrays" => header.equal_arrays = val == "true",
-                "pandoc" => header.pandoc = val == "true",
+                "pandoc" => header.pandoc = Some(val == "true"),
                 "filetype" => header.filetype = val.to_string(),
                 "source" => header.source = val.to_string(),
                 "ignore" => header.ignore = val == "true",

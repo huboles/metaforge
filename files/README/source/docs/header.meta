@@ -37,12 +37,12 @@ normal definition blocks.
 - blank = **BOOL** - if true, stops parsing and returns an empty string
 - panic_default = **BOOL** - if true, panics on an undefined default pattern
 - panic_undefined = **BOOL** - if true, panics on an undefined variable or array
+- source = **STRING** - change the the filetype of the source file
+- filetype = **STRING** - change the filetype of the output file
 - equal_arrays = **BOOL** - if true, panics if arrays in the same pattern have different sizes
+- pandoc = **BOOL** - toggles if pandoc is ran on this file to convert between filetypes, defaults to *true* in **source** dir, and *false* in **pattern** dir.
 
 ### source
 
 - ignore = **BOOL** - stops parsing and skips this file, useful for ignoring directories with scoped definitions
-- source = **STRING** - change the the filetype of the source file
-- filetype = **STRING** - change the filetype of the output file
-- pandoc = **BOOL** - toggles if pandoc is ran on this file to convert between filetypes
 - copy_only = **BOOL** - copys file or directory without processing anything
