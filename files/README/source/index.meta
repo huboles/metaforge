@@ -13,6 +13,7 @@ you can change anything in the **README** directory and see how it affects the s
 you rebuild it.
 
 ## contents
+
 - [syntax](docs/syntax.html)
 - [definitions](docs/definitions.html)
 - [expansions](docs/expansions.html)
@@ -20,6 +21,12 @@ you rebuild it.
 - [headers](docs/header.html)
 - [flags](docs/flags.html)
 
+## new in this version
+
+- spaces are correctly preserved between directly adjacent substitutions
+- copy_only header directive
+
 ## versions
+- 0.1.3: grammar update
 - 0.1.2: multithreading
 - 0.1.1: initial release
