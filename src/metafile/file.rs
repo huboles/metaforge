@@ -63,6 +63,13 @@ impl<'a> MetaFile<'a> {
             return Err(Box::new(MetaError::Ignored));
         }
 
+        if self.header.copy_only {
+            let dest = self.dest().map_err(MetaError::from)?;
+            let source: String = self.source.iter().map(|s| s.to_string()).collect();
+            std::fs::write(dest, source).unwrap();
+            return Err(Box::new(MetaError::Ignored));
+        }
+
         let html = self.to_html().map_err(MetaError::from)?;
 
         let pattern = self.get_pattern("base").map_err(MetaError::from)?;

@@ -10,6 +10,7 @@ pub struct Header {
     pub source: String,
     pub pandoc: bool,
     pub ignore: bool,
+    pub copy_only: bool,
 }
 
 impl Header {
@@ -23,6 +24,7 @@ impl Header {
             source: String::from("markdown"),
             pandoc: true,
             ignore: false,
+            copy_only: false,
         }
     }
 }
@@ -40,6 +42,7 @@ impl From<HashMap<String, String>> for Header {
                 "filetype" => header.filetype = val.to_string(),
                 "source" => header.source = val.to_string(),
                 "ignore" => header.ignore = val == "true",
+                "copy_only" => header.copy_only = val == "true",
                 _ => continue,
             }
         }

@@ -43,6 +43,12 @@ impl<'a> DirNode<'a> {
         for f in fs::read_dir(&self.path)? {
             let file = f?.path();
 
+            if self.global.header.copy_only {
+                let dest = self.global.dest()?;
+                fs::copy(file, &dest.parent().unwrap_or(&self.opts.build))?;
+                continue;
+            }
+
             if file.is_dir() {
                 let dir = DirNode::build(file, self.opts)?;
                 self.dirs.push(dir);

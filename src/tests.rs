@@ -1,4 +1,4 @@
-use crate::{MetaFile, Options};
+use crate::{MetaError, MetaFile, Options};
 use eyre::Result;
 use std::{fs, path::PathBuf};
 
@@ -18,7 +18,17 @@ macro_rules! unit_test (
             let mut path = test_dir.join($file);
             path.set_extension("meta");
             let file = MetaFile::build(path, &opts)?;
-            assert_eq!(file.construct()?, $test);
+
+            let str = match file.construct() {
+                Ok(f) => f,
+                Err(e) => match *e {
+                    MetaError::Ignored => return Ok(()),
+                    e => return Err(e.into())
+                }
+
+            };
+
+            assert_eq!(str, $test);
             Ok(())
         }
     };
@@ -123,6 +133,12 @@ unit_test!(
     expand_spaces,
     "expand/spaces",
     "<html>\n<p>GOOD GOOD</p>\n\n\n\n</html>\n"
+);
+
+unit_test!(
+    copy_header,
+    "header/copy",
+    r#"variable: ${this} should get copied verbatim"#
 );
 
 panic_test!(ignore, "ignore.meta", "");

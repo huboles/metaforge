@@ -45,3 +45,4 @@ normal definition blocks.
 - source = **STRING** - change the the filetype of the source file
 - filetype = **STRING** - change the filetype of the output file
 - pandoc = **BOOL** - toggles if pandoc is ran on this file to convert between filetypes
+- copy_only = **BOOL** - copys file or directory without processing anything
