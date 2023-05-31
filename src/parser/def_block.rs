@@ -55,8 +55,8 @@ fn parse_assign(pair: Pair<Rule>) -> Result<(Scope, &str)> {
     }
 
     if global {
-        Ok((Scope::into_global(key), val))
+        Ok((Scope::create_global(key), val))
     } else {
-        Ok((Scope::into_local(key), val))
+        Ok((Scope::create_local(key), val))
     }
 }

@@ -40,9 +40,9 @@ fn parse_assign_array(pair: Pair<Rule>) -> Result<(Scope, Vec<String>)> {
     }
 
     if global {
-        Ok((Scope::into_global(key), val))
+        Ok((Scope::create_global(key), val))
     } else {
-        Ok((Scope::into_local(key), val))
+        Ok((Scope::create_local(key), val))
     }
 }
 

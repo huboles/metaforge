@@ -29,15 +29,15 @@ impl<'a> MetaFile<'a> {
 
                 let value = if let Some(val) = self.arrays.get(&name_key) {
                     &val[..]
-                } else if let Some(val) = self.arrays.get(&name_key.to_global()) {
+                } else if let Some(val) = self.arrays.get(&name_key.global()) {
                     &val[..]
                 } else if let Some(val) = self.arrays.get(&class_key) {
                     &val[..]
-                } else if let Some(val) = self.arrays.get(&class_key.to_global()) {
+                } else if let Some(val) = self.arrays.get(&class_key.global()) {
                     &val[..]
-                } else if let Some(val) = self.arrays.get(&Scope::into_global(key)) {
+                } else if let Some(val) = self.arrays.get(&Scope::create_global(key)) {
                     &val[..]
-                } else if let Some(val) = self.arrays.get(&Scope::into_local(key)) {
+                } else if let Some(val) = self.arrays.get(&Scope::create_local(key)) {
                     &val[..]
                 } else if self.opts.undefined {
                     panic!(

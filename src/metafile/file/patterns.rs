@@ -5,16 +5,16 @@ impl<'a> MetaFile<'a> {
         log!(self.opts, format!("expanding {key}"), 2);
         // SOURCE is already expanded in the initial construct() call
         if key == "SOURCE" {
-            if let Some(source) = self.patterns.get(&Scope::into_global("SOURCE")) {
+            if let Some(source) = self.patterns.get(&Scope::create_global("SOURCE")) {
                 return Ok(source.to_string());
             } else {
                 return Ok(String::new());
             }
         }
 
-        let mut filename = if let Some(name) = self.patterns.get(&Scope::into_local(key)) {
+        let mut filename = if let Some(name) = self.patterns.get(&Scope::create_local(key)) {
             Ok(name.to_string())
-        } else if let Some(name) = self.patterns.get(&Scope::into_global(key)) {
+        } else if let Some(name) = self.patterns.get(&Scope::create_global(key)) {
             Ok(name.to_string())
         } else if self
             .opts

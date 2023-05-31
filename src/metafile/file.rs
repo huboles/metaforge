@@ -72,10 +72,10 @@ impl<'a> MetaFile<'a> {
         })?;
 
         base.merge(self);
-        base.patterns.insert(Scope::into_global("SOURCE"), html);
+        base.patterns.insert(Scope::create_global("SOURCE"), html);
         let mut base_path = self.opts.pattern.join("base").join(
             self.patterns
-                .get(&Scope::into_global("base"))
+                .get(&Scope::create_global("base"))
                 .unwrap_or(&"default".into()),
         );
 
