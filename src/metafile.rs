@@ -35,7 +35,6 @@ impl Src {
     }
 
     pub fn to_str(str: impl Display) -> Self {
-        println!("{}", str.to_string());
         Src::Str(str.to_string())
     }
 }
