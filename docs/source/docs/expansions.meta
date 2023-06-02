@@ -94,7 +94,7 @@ allowing patterns to call the same source file every time, or source files to ex
 source files.
 
 ### example
-    ...lorem &{SOURCE.foo.bar} ipsum dolor...
+    ...lorem ${pat_sub}SOURCE.foo.bar} ipsum dolor...
 
 once the filename is determined, it is parsed and expands any contained variables,
 arrays and patterns. if it is a ***SOURCE*** pattern, it is converted to html after
