@@ -11,6 +11,7 @@ pub struct Header {
     pub pandoc: Option<bool>,
     pub ignore: bool,
     pub copy_only: bool,
+    pub minify: bool,
 }
 
 impl Header {
@@ -25,6 +26,7 @@ impl Header {
             pandoc: None,
             ignore: false,
             copy_only: false,
+            minify: true,
         }
     }
 }
@@ -43,6 +45,7 @@ impl From<HashMap<String, String>> for Header {
                 "source" => header.source = val.to_string(),
                 "ignore" => header.ignore = val == "true",
                 "copy_only" => header.copy_only = val == "true",
+                "minify" => header.copy_only = val == "true",
                 _ => continue,
             }
         }

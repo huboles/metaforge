@@ -86,7 +86,11 @@ impl<'a> DirNode<'a> {
             file.merge(&self.global);
             match file.construct() {
                 Ok(str) => {
-                    fs::write(file.dest()?, minify(str.as_bytes(), &HTML_CFG))?;
+                    if file.header.minify && self.opts.minify {
+                        fs::write(file.dest()?, minify(str.as_bytes(), &HTML_CFG))?;
+                    } else {
+                        fs::write(file.dest()?, str)?;
+                    }
                 }
                 Err(e) => {
                     // print a line to stderr about failure but continue with other files

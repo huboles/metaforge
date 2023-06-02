@@ -53,6 +53,9 @@ pub struct Opts {
     /// don't call pandoc on source files
     #[arg(long, default_value_t = false)]
     pub no_pandoc: bool,
+    /// don't minify resulting html
+    #[arg(long, default_value_t = false)]
+    pub no_minify: bool,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -72,6 +75,7 @@ pub struct Options {
     pub clean: bool,
     pub no_pandoc: bool,
     pub new: bool,
+    pub minify: bool,
 }
 
 impl Options {
@@ -92,6 +96,7 @@ impl Options {
             clean: false,
             no_pandoc: false,
             new: false,
+            minify: true,
         }
     }
 }
@@ -109,6 +114,7 @@ impl TryFrom<crate::Opts> for Options {
         opts.no_pandoc = value.no_pandoc;
         opts.new = value.new;
         opts.parallel = value.parallel;
+        opts.minify = !value.no_minify;
 
         opts.root = if let Some(root) = value.root.as_deref() {
             PathBuf::from(root).canonicalize()
