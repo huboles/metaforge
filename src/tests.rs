@@ -147,6 +147,12 @@ unit_test!(
     "<html>\n<h1 id=\"good\">GOOD</h1>\n\n\n</html>\n"
 );
 
+unit_test!(
+    include_source,
+    "expand/source",
+    "<html>\n<p>GOOD GOOD</p>\n\n\n\n</html>\n"
+);
+
 panic_test!(ignore, "ignore.meta", "");
 
 #[test]
