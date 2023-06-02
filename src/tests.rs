@@ -189,12 +189,12 @@ fn test_global() -> Result<()> {
 
     assert_eq!(
         fs::read_to_string(dir.join("build/unit_tests/global/pattern.html"))?,
-        "<p>GOOD</p>\n<p>GOOD</p>\n\n"
+        "<p>GOOD</p><p>GOOD</p>"
     );
 
     assert_eq!(
         fs::read_to_string(dir.join("build/unit_tests/global/variable.html"))?,
-        "<p>GOOD GOOD</p>\n\n"
+        "<p>GOOD GOOD</p>"
     );
 
     Ok(())
