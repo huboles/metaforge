@@ -3,7 +3,7 @@ use eyre::Result;
 #[test]
 #[ignore = "generates README site"]
 fn readme() -> Result<()> {
-    let dir = std::path::PathBuf::from("files/README")
+    let dir = std::path::PathBuf::from("docs")
         .canonicalize()
         .unwrap();
 

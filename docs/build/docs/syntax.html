@@ -1,0 +1,40 @@
+<!doctypehtml><html><head><title>syntax</title><meta content="basic syntax rules"name=description><meta content="huck boles"name=author></head><body><a href=../index.html>home</a><div><h1><strong>syntax</strong> - <em>0.1.3</em></h1></div><p>basic syntax rules</p><article><h2 id=sigils>sigils</h2><ul><li>$ variables</li><li>@ arrays</li><li>& patterns</li><li># settings</li><li>- comments</li></ul><h2 id=definition-block>definition block</h2><p>a sigil followed by assignment operations enclosed by brackets</p><h3 id=examples>examples</h3><pre><code>${  foo = 'bar' }
+
+&{ 
+   foo.bar = "baz"
+   bar.baz = 'foo'
+}</code></pre><h2 id=strings>strings</h2><p>double or single quoted strings, double quoted strings require escaping control characters, and single quoted strings get copied as is. single quoted strings can stretch across newlines.</p><h3 id=examples-1>examples</h3><pre><code>"foo bar baz\n"
+
+'foo
+bar
+baz'</code></pre><h2 id=arrays>arrays</h2><p>a list of strings, separated by commas, enclosed by brackets. whitespace and newlines between list values are accepted</p><h3 id=examples-2>examples</h3><pre><code>[ 'foo', 'bar', 'baz', 'quux' ]
+
+["foo","bar","baz"]
+
+[
+    'foo',
+    'bar',
+    'baz'
+]</code></pre><h2 id=comments>comments</h2><p>a comment sigil (-) followed by a comment in braces. the only characters not allowed are braces.</p><p>comments get removed during the first pass through of parsing, and can occur anywhere in or across a line.</p><h3 id=examples-3>examples</h3><pre><code>-{  foobar }
+
+-{ 
+   foobar
+   foobaz }</code></pre><h2 id=layout>layout</h2><ul><li>optional header definition block</li><li>optional variable, array, pattern definition blocks</li><li>source</li></ul><h3 id=example>example</h3><pre><code>#{  foo = 'bar' } -{  settings for parsing file }
+
+${ 
+   foo = 'foobar'
+   bar.foo = 'foobaz'
+}
+
+@{ 
+   foo = ['foobar','foobaz']
+   foo.bar.baz = [ 'foobar', 'foobaz', 'barbaz' ]
+}
+
+&{ 
+   foo.bar = 'foobar'
+   bar = "foo_bar"
+}
+
+# FOOBAR
+Foo bar baz quux lorem ipsum...</code></pre></article></body><foot> made with <strong>metaforge</strong> </foot></html>

@@ -1,0 +1,59 @@
+<!doctypehtml><html><head><title>flags</title><meta content="available flags for running metaforge"name=description><meta content="huck boles"name=author></head><body><a href=../index.html>home</a><div><h1><strong>flags</strong> - <em>0.1.3</em></h1></div><p>available flags for running metaforge</p><article><h2 id=available-flags>available flags</h2><pre><code>-r, --root &LTROOT_DIR>
+        root directory, contains source, pattern and build directories
+        defaults to current working directory
+-s, --source &LTSOURCE_DIR>
+        source file directory, contains directory structure and .meta files for completed site
+        defaults to [root_dir]/source
+-b, --build &LTBUILD_DIR>
+        build directory, directory where the final site gets built
+        defaults to [root_dir]/build
+-p, --pattern &LTPATTERN_DIR>
+        pattern directory, contains .meta files that are available for expansion
+        defaults to [root_dir]/pattern
+-f, --file &LTFILENAME>
+        builds a single file and outputs it to stdout
+-l  --parallel
+        enable parallel processing for faster build times
+        interleaves output from files in verbose mode
+-v, --verbose
+        enable extra output. repeated flags give more info
+            v   => list source files/directories being created
+            vv  => list expansions and substitutions
+            vvv => full debug information (function calls, interior parameters)
+-q, --quiet
+        minimal output
+-o, --output &LTOUTPUT_FILETYPE>
+        output filetype, defaults to html
+        options:
+            - html
+            - markdown
+            - json
+            - latex
+            - man
+            - txt
+            - asciidoc
+            - pdf
+-i, --input &LTINPUT_FILETYPE>
+        input filetype, defaults to markdown
+        options:
+            - markdown
+            - html
+            - json
+            - latex
+            - org
+-h, --help
+        print a brief help page
+-V, --version
+        print version
+    --clean
+        clean build directory before building site,
+        will remove anything currently in build directory
+    --new
+        create a new skeleton directory in the root dir
+    --force
+        don't stop building site if a single file fails
+    --undefined
+        panics and stops building site if any undefined variables are encountered
+    --no-pandoc
+        don't call pandoc on source files
+        allows metaforge to run without pandoc installed</code></pre></article></body><foot> made with <strong>metaforge</strong> </foot></html>

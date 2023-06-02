@@ -40,8 +40,8 @@ normal definition blocks.
 - source = **STRING** - change the the filetype of the source file
 - filetype = **STRING** - change the filetype of the output file
 - equal_arrays = **BOOL** - if true, panics if arrays in the same pattern have different sizes
-- pandoc = **BOOL** - toggles if pandoc is ran on this file to convert between filetypes, defaults to *true* in **source** dir, and *false* in **pattern** dir.
 - minify = **BOOL** - toggles html minification
+- pandoc = **BOOL** - toggles if pandoc is ran on this file to convert between filetypes, defaults to *true* in **source** dir, and *false* in **pattern** dir.
 
 ### source
 

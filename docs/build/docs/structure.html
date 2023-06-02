@@ -1,0 +1,14 @@
+<!doctypehtml><html><head><title>structure</title><meta content="directory structure for metaforge"name=description><meta content="huck boles"name=author></head><body><a href=../index.html>home</a><div><h1><strong>structure</strong> - <em>0.1.3</em></h1></div><p>directory structure for metaforge</p><article><h2 id=file-locations>file locations</h2><p>metaforge parses files with the <strong>.meta</strong> extension.</p><p>files in the pattern directory are available for file expansion. <strong>default.meta</strong> files are fallback files if the pattern directory gets called without a defined value.</p><p>the structure of the source directory gets mirrored to the build directory as the site is build, with any <strong>.meta</strong> files becoming <strong>.html</strong> files, except <strong>default.meta</strong> files, which define default values for a directory and its children.</p><p>the source section of files in the source directory can be written in markdown and will converted to html.</p><p>files from the pattern directory the should generally contain html snippets, but can contain anything that you’d like to substitute.</p><p>required directories are: - source (site structure and contents) - pattern (patterns for expansion) - pattern/base (gets expanded to start building each pattern)</p><p>the build directory doesn’t need to exist, as metaforge will create a new one if it’s missing</p><p>a new skeleton site can be built in the given root directory by passing the <strong><em>–new</em></strong> flag to metaforge,</p><h2 id=skeleton-structure>skeleton structure</h2><pre><code>./
+L pattern/
+|   L base/
+|   |    L default.meta
+|   L body/
+|   |    L default.meta
+|   L head/
+|   |    L default.meta
+|   L foot/
+|        L default.meta
+L source/
+|   L hello_world.meta
+L build/
+    L hello_world.html</code></pre></article></body><foot> made with <strong>metaforge</strong> </foot></html>

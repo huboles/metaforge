@@ -63,8 +63,11 @@ anywhere in or across a line.
        foobaz }
 
 ## layout
-- optional header definition block
-- optional variable, array, pattern definition blocks
+
+*all sections are optional*
+
+- header definition block
+- variable, array, pattern definition blocks
 - source
 
 ### example
