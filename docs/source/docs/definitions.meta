@@ -1,7 +1,6 @@
 ${
     title = 'definitions'
     description = 'definining variables and patterns'
-    arr_sub = '@{'
 }
 
 ## rules
@@ -73,7 +72,7 @@ value normally.
 
        foo.bar = [ 'foobar', 'foobaz' ]
        ${com} this will copy pattern/foo/*.meta twice, inserting 'foobar and 'foobaz'
-          once each at the location of ${arr_sub}bar} }
+          once each at the location of ${arr}bar} }
     }
 
     ${com} all of these patterns are only defined for this file }

@@ -1,4 +1,4 @@
-# metaforge - v0.1.2
+# metaforge - v0.1.3
 
 a pattern driven static site generator for extensible snippet insertion.
 
@@ -15,9 +15,10 @@ a pattern driven static site generator for extensible snippet insertion.
 ## about
 
 metaforge is a static site generator that lets you write something once, and re-use it
-across your site. it requires previous knowledge of html, and doesn't come with pre-made
-themes or templates except for a completely bare skeleton directory. it gives you extremely
-fine grained control over the generated html, customizing each pattern to a source file
+across your site.
+
+metaforge doesn't come with pre-made themes or templates except for a completely bare skeleton directory.
+it gives you extremely fine grained control over the generated html, customizing each pattern to a source file
 with variables and mappable arrays.
 
 metaforge also lets you write metapatterns that contain classes, masking choices to a
@@ -31,7 +32,7 @@ this can be set on both a site and file level, allowing single files in the site
 such as an rss feed. metaforge can also technically translate between any two document formats pandoc supports,
 but nothing other than the default markdown to html gets tested.
 
-the full documentation is available in this repository under the **files/README/source/docs**
+the full documentation is available in this repository under the **docs/source**
 directory. it's currently setup as a working example of a metaforge site, so you can poke around
 and see one way a site can be setup.
 
@@ -41,4 +42,4 @@ and see one way a site can be setup.
 
 this command can be run as many times as needed to regenerate the documentation, and is
 reccomended after upgrading to a new version to see what's changed. the generated docs will
-be available in **files/README/build**, and can be looked at in any web browser.
+be available in **docs/build**, and can be looked at in any web browser.
