@@ -31,7 +31,7 @@ the build directory doesn't need to exist, as metaforge will create a
 new one if it's missing
 
 a new skeleton site can be built in the given root directory by passing
-the ***--new*** flag to metaforge,
+the ***\-\-new*** flag to metaforge,
 
 ## skeleton structure
     ./
