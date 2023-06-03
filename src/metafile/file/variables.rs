@@ -4,14 +4,10 @@ impl<'a> MetaFile<'a> {
     pub fn get_variable(&self, key: &str) -> Result<String> {
         log!(
             self.opts,
-            format!(
-                "substituting {} in {}",
-                key.to_string(),
-                self.path.display()
-            ),
+            format!("substituting {key} in {}", self.path.display()),
             2
         );
-        let long_key = self.name()? + "." + &key.to_string();
+        let long_key = self.name()? + "." + key;
         if let Some(val) = self.variables.get(&Scope::create_local(&long_key)) {
             Ok(val.clone())
         } else if let Some(val) = self.variables.get(&Scope::create_global(&long_key)) {

@@ -21,7 +21,7 @@ impl<'a> MetaFile<'a> {
         } else if self
             .opts
             .pattern
-            .join(key.replace(".", "/") + ".meta")
+            .join(key.replace('.', "/") + ".meta")
             .exists()
             || is_source
         {

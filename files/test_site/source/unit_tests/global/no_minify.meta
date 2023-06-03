@@ -1,0 +1,7 @@
+#{ minify = false }
+
+&{ base = DEFAULT }
+
+# TEST
+
+this shouldn't get minified

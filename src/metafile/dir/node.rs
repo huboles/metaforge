@@ -62,7 +62,7 @@ impl<'a> DirNode<'a> {
 
             if self.global.header.copy_only {
                 let dest = self.global.dest()?;
-                fs::copy(file, &dest.parent().unwrap_or(&self.opts.build))?;
+                fs::copy(file, dest.parent().unwrap_or(&self.opts.build))?;
                 continue;
             }
 
@@ -86,7 +86,7 @@ impl<'a> DirNode<'a> {
             file.merge(&self.global);
             match file.construct() {
                 Ok(str) => {
-                    if file.header.minify && self.opts.minify {
+                    if file.header.minify && &file.header.filetype == "html" {
                         fs::write(file.dest()?, minify(str.as_bytes(), &HTML_CFG))?;
                     } else {
                         fs::write(file.dest()?, str)?;

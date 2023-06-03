@@ -32,7 +32,7 @@ pub fn parse_string(file: String, opts: &Options) -> Result<MetaFile> {
             match pair.as_rule() {
                 Rule::source => meta_file.source = parse_source(pair.into_inner()),
                 Rule::header => {
-                    meta_file.header = Header::from(parse_header_defs(pair.into_inner()))
+                    meta_file.header = Header::try_from(parse_header_defs(pair.into_inner()))?
                 }
                 Rule::var_def => meta_file.variables = parse_defs(pair.into_inner())?,
                 Rule::arr_def => meta_file.arrays = parse_array_defs(pair.into_inner())?,

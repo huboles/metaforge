@@ -24,6 +24,8 @@ pub enum MetaError {
     UndefinedDefault { pattern: String, path: String },
     #[error("the parser cannot resolve this input: {input}")]
     UnreachableRule { input: String },
+    #[error("unknown option in header: {opt}")]
+    Header { opt: String },
     #[error("{file}\n{error}")]
     ParserError { file: String, error: String },
     #[error(transparent)]
@@ -39,7 +41,7 @@ pub fn check_ignore<T>(result: Result<T, MetaError>) -> Result<Option<T>, MetaEr
         Ok(f) => Ok(Some(f)),
         Err(e) => match e {
             MetaError::Ignored => Ok(None),
-            e => Err(e.into()),
+            e => Err(e),
         },
     }
 }
