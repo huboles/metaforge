@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(author = "huck boles")]
-#[command(version = "0.1.2")]
+#[command(version = "0.1.3")]
 #[command(about = "customizable template driven static site generator")]
 #[command(long_about = None)]
 pub struct Opts {
