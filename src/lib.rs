@@ -83,7 +83,7 @@ pub fn single_file(opts: &Options) -> Result<String> {
         })),
     }?;
 
-    let file = parse_string(source, opts)?;
+    let mut file = parse_string(source, opts)?;
 
     Ok(file.construct()?)
 }

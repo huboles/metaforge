@@ -1,0 +1,3 @@
+#{ copy_only = true }
+
+variable: ${this} should get copied verbatim

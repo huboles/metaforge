@@ -1,9 +1,6 @@
 ${
     title = 'expansions'
     description = 'expanding variables and patterns in a file'
-    var_sub = '${'
-    arr_sub = '@{'
-    pat_sub = '&{'
 }
 
 ## syntax
@@ -15,11 +12,11 @@ when the file is built
 
 ### examples
 
-    ...this is a string with a ${var_sub}variable} to be expanded...
+    ...this is a string with a ${var}variable} to be expanded...
 
-    ...this line has a ${pat_sub}pattern} inside of it...
+    ...this line has a ${pat}pattern} inside of it...
 
-    ...this ${arr_sub}array} will be replaced...
+    ...this ${arr}array} will be replaced...
 
 ## behavior
 
@@ -41,11 +38,11 @@ don't need any extra expansion.
            quux = BLANK
         }
 
-    pattern [foo]: <p>${var_sub}baz} ${var}quux}</p>
+    pattern [foo]: <p>${var}baz} ${var}quux}</p>
 
     expanded [foo]: <p>foo </p>
 
-    pattern [bar]: <p>${var_sub}baz} ${var}quux}</p>
+    pattern [bar]: <p>${var}baz} ${var}quux}</p>
 
     expanded [bar]: <p>quux </p>
 
@@ -58,7 +55,7 @@ parts of patterns.
 
 #### example
 
-    pattern [foo]: <p>${arr_sub}bar}</p>
+    pattern [foo]: <p>${arr}bar}</p>
 
     defintion: ${arr} foo.bar = ['foo', 'bar', 'baz'] }
 
@@ -89,20 +86,28 @@ processed source from the original calling file in the source directory. this
 goes through an extra step right before insertion, calling pandoc on the file
 to convert between the chosen filetypes.
 
+***SOURCE*** can also be used as a standin for the source directory while writing expansions,
+allowing patterns to call the same source file every time, or source files to expand other
+source files.
+
+### example
+    ...lorem ${pat}SOURCE.foo.bar} ipsum dolor...
+
 once the filename is determined, it is parsed and expands any contained variables,
 arrays and patterns. if it is a ***SOURCE*** pattern, it is converted to html after
 the expansions. the expanded pattern is then inserted in place of the calling identifier.
 
 ## building
 
-as each file is built, the first thing expanded is the relevant **base/[FILE].meta** pattern,
-so it is required to have at least a **default.meta** in the **pattern/base** directory
+as each source file is built, the first thing expanded is the defined or default
+**[PATTERN]/base/[FILE].meta** pattern, so it is required to have at least a **default.meta**
+in the **pattern/base** directory
 
 ### example
 
-    pattern [base]: <html>${pat_sub}body}</html>
+    pattern [base]: <html>${pat}body}</html>
 
-    pattern [body]: <body>${pat_sub}SOURCE}</body>
+    pattern [body]: <body>${pat}SOURCE}</body>
 
     source [SOURCE]: foo *bar* baz
 

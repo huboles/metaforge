@@ -2,9 +2,9 @@ ${
     -{ index is a folder up in this directory }
     home = '../index.html'
     -{ using substitutions for example code so it doesn't mess up parsing }
-    var = '${ '
-    arr = '@{ '
-    pat = '&{ '
-    head = '#{ '
-    com = '-{ '
+    var = '${'
+    arr = '@{'
+    pat = '&{'
+    head = '#{'
+    com = '-{'
 }

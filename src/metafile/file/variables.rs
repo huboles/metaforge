@@ -12,13 +12,13 @@ impl<'a> MetaFile<'a> {
             2
         );
         let long_key = self.name()? + "." + &key.to_string();
-        if let Some(val) = self.variables.get(&Scope::into_local(&long_key)) {
+        if let Some(val) = self.variables.get(&Scope::create_local(&long_key)) {
             Ok(val.clone())
-        } else if let Some(val) = self.variables.get(&Scope::into_global(&long_key)) {
+        } else if let Some(val) = self.variables.get(&Scope::create_global(&long_key)) {
             Ok(val.clone())
-        } else if let Some(val) = self.variables.get(&Scope::into_local(key)) {
+        } else if let Some(val) = self.variables.get(&Scope::create_local(key)) {
             Ok(val.clone())
-        } else if let Some(val) = self.variables.get(&Scope::into_global(key)) {
+        } else if let Some(val) = self.variables.get(&Scope::create_global(key)) {
             Ok(val.clone())
         } else if self.opts.undefined || self.header.panic_undefined {
             return Err(MetaError::UndefinedExpand {

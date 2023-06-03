@@ -22,6 +22,7 @@ files from the pattern directory the should generally contain html snippets,
 but can contain anything that you'd like to substitute.
 
 required directories are:
+
 - source (site structure and contents)
 - pattern (patterns for expansion)
 - pattern/base (gets expanded to start building each pattern)

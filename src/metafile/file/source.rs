@@ -1,10 +1,10 @@
 use super::*;
 
 impl<'a> MetaFile<'a> {
-    pub fn to_html(&self) -> Result<String> {
+    pub fn pandoc(&mut self) -> Result<String> {
         let string = self.get_source()?;
 
-        if self.opts.no_pandoc || !self.header.pandoc || string.is_empty() {
+        if self.opts.no_pandoc || string.is_empty() {
             return Ok(string);
         }
 
@@ -28,6 +28,7 @@ impl<'a> MetaFile<'a> {
             .set_output_format(output, vec![]);
 
         if let pandoc::PandocOutput::ToBuffer(s) = pandoc.execute()? {
+            self.header.pandoc = Some(false);
             Ok(s)
         } else {
             Err(MetaError::Pandoc { file: self.name()? }.into())

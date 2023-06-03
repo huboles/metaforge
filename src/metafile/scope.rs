@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum Scope {
     Local(String),
@@ -5,11 +7,11 @@ pub enum Scope {
 }
 
 impl Scope {
-    pub fn into_local(str: impl ToString) -> Scope {
+    pub fn create_local(str: impl Display) -> Scope {
         Scope::Local(str.to_string())
     }
 
-    pub fn into_global(str: impl ToString) -> Scope {
+    pub fn create_global(str: impl ToString) -> Scope {
         Scope::Global(str.to_string())
     }
 
@@ -27,19 +29,21 @@ impl Scope {
         }
     }
 
-    pub fn to_local(&self) -> Scope {
+    pub fn local(&self) -> Scope {
         Scope::Local(self.to_string())
     }
 
-    pub fn to_global(&self) -> Scope {
+    pub fn global(&self) -> Scope {
         Scope::Global(self.to_string())
     }
 }
 
-impl ToString for Scope {
-    fn to_string(&self) -> String {
-        match self {
+impl Display for Scope {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
             Scope::Local(x) | Scope::Global(x) => x.to_string(),
-        }
+        };
+
+        write!(f, "{str}")
     }
 }

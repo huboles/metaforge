@@ -62,5 +62,6 @@ ${
         --undefined
             panics and stops building site if any undefined variables are encountered
         --no-pandoc
-            don't call pandoc on source files
-            allows metaforge to run without pandoc installed
+            don't call pandoc on source files. allows metaforge to run without pandoc installed
+        --no-minify
+            don't minify resulting html

@@ -13,7 +13,7 @@ pub fn parallel_build_dir(c: &mut Criterion) {
     opts.clean = true;
     opts.parallel = true;
 
-    c.bench_function("build dir", |b| {
+    c.bench_function("parallel build", |b| {
         if opts.build.exists() {
             std::fs::remove_dir_all(&opts.build).expect("clean build dir");
         }

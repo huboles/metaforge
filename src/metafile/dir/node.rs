@@ -1,8 +1,25 @@
 use crate::{error::*, Options};
 use eyre::Result;
+use minify_html::{minify, Cfg};
 use std::{fs, path::PathBuf};
 
 use super::*;
+
+const HTML_CFG: Cfg = Cfg {
+    do_not_minify_doctype: false,
+    ensure_spec_compliant_unquoted_attribute_values: false,
+    keep_closing_tags: true,
+    keep_html_and_head_opening_tags: true,
+    keep_spaces_between_attributes: false,
+    keep_comments: false,
+    minify_css: true,
+    minify_css_level_1: false,
+    minify_css_level_2: true,
+    minify_css_level_3: false,
+    minify_js: true,
+    remove_bangs: true,
+    remove_processing_instructions: true,
+};
 
 impl<'a> DirNode<'a> {
     pub fn build(path: PathBuf, opts: &'a Options) -> Result<Self> {
@@ -43,6 +60,12 @@ impl<'a> DirNode<'a> {
         for f in fs::read_dir(&self.path)? {
             let file = f?.path();
 
+            if self.global.header.copy_only {
+                let dest = self.global.dest()?;
+                fs::copy(file, &dest.parent().unwrap_or(&self.opts.build))?;
+                continue;
+            }
+
             if file.is_dir() {
                 let dir = DirNode::build(file, self.opts)?;
                 self.dirs.push(dir);
@@ -63,7 +86,11 @@ impl<'a> DirNode<'a> {
             file.merge(&self.global);
             match file.construct() {
                 Ok(str) => {
-                    fs::write(file.dest()?, str)?;
+                    if file.header.minify && self.opts.minify {
+                        fs::write(file.dest()?, minify(str.as_bytes(), &HTML_CFG))?;
+                    } else {
+                        fs::write(file.dest()?, str)?;
+                    }
                 }
                 Err(e) => {
                     // print a line to stderr about failure but continue with other files

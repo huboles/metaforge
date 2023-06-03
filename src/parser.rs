@@ -11,7 +11,7 @@ use source::*;
 #[cfg(test)]
 mod tests;
 
-use crate::{log, Header, MetaError, MetaFile, Options};
+use crate::{Header, MetaError, MetaFile, Options};
 use eyre::Result;
 use pest::{
     iterators::{Pair, Pairs},
@@ -23,8 +23,6 @@ use pest::{
 pub struct MetaParser;
 
 pub fn parse_string(file: String, opts: &Options) -> Result<MetaFile> {
-    log!(opts, "parsing file", 3);
-
     let pair = MetaParser::parse(Rule::file, &file)?.next().unwrap();
 
     let mut meta_file = MetaFile::new(opts);
