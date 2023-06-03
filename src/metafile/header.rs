@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::MetaError;
+
 #[derive(Debug, Clone, Default)]
 pub struct Header {
     pub blank: bool,
@@ -31,8 +33,9 @@ impl Header {
     }
 }
 
-impl From<HashMap<String, String>> for Header {
-    fn from(value: HashMap<String, String>) -> Self {
+impl TryFrom<HashMap<String, String>> for Header {
+    type Error = MetaError;
+    fn try_from(value: HashMap<String, String>) -> Result<Self, Self::Error> {
         let mut header = Header::new();
         for (key, val) in value.iter() {
             match &key[..] {
@@ -45,10 +48,10 @@ impl From<HashMap<String, String>> for Header {
                 "source" => header.source = val.to_string(),
                 "ignore" => header.ignore = val == "true",
                 "copy_only" => header.copy_only = val == "true",
-                "minify" => header.copy_only = val == "true",
-                _ => continue,
+                "minify" => header.minify = val == "true",
+                x => return Err(MetaError::Header { opt: x.to_string() }),
             }
         }
-        header
+        Ok(header)
     }
 }

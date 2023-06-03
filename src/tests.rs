@@ -203,5 +203,10 @@ fn test_global() -> Result<()> {
         "<p>GOOD GOOD</p>"
     );
 
+    assert_eq!(
+        fs::read_to_string(dir.join("build/unit_tests/global/no_minify.html"))?,
+        "<html>\n<h1 id=\"test\">TEST</h1>\n<p>this shouldn’t get minified</p>\n\n\n\n</html>\n"
+    );
+
     Ok(())
 }

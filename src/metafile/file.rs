@@ -41,8 +41,7 @@ impl<'a> MetaFile<'a> {
             Err(_) => {
                 return Err(MetaError::FileNotFound {
                     path: path.to_string_lossy().to_string(),
-                }
-                .into())
+                })
             }
         };
 
@@ -71,12 +70,11 @@ impl<'a> MetaFile<'a> {
             return Err(Box::new(MetaError::Ignored));
         }
 
-        let src_str: String;
-        if self.header.pandoc.map_or(true, |x| x) {
-            src_str = self.pandoc().map_err(MetaError::from)?;
+        let src_str = if self.header.pandoc.map_or(true, |x| x) {
+            self.pandoc().map_err(MetaError::from)
         } else {
-            src_str = self.get_source().map_err(MetaError::from)?;
-        }
+            self.get_source().map_err(MetaError::from)
+        }?;
 
         let pattern = self.get_pattern("base").map_err(MetaError::from)?;
         let mut base = parse_string(pattern, self.opts).map_err(|e| MetaError::ParserError {
